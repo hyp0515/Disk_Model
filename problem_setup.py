@@ -157,37 +157,4 @@ with open('dustopac.inp','w+') as f:
     f.write('0                          0=Thermal grain\n')
     f.write('refractory_organics        Extension of name of dustkappa_***.inp file\n')
     f.write('----------------------------------------------------------------------------\n')
-#
-# Write the lines.inp control file
-#
-with open('lines.inp','w+') as f:
-    f.write('1\n')
-    f.write('1\n')
-    f.write('co    leiden    0    0\n')
-#
-# Write velocity field
-#
-iformat = 1
-vr      = 0
-vtheta  = 0
-vphi    = np.sqrt(G*Mass_of_star/(DM.r_sph*au))  # Keplerian velocity
-with open('gas_velocity.inp','w+') as f:
-    f.write(str(iformat)+'\n')
-    f.write('%d\n'%(nr*ntheta*nphi))
-    for idx_r in range(nr):
-        for idx_theta in range(ntheta):
-            for idx_phi in range(nphi):
-                f.write('%13.6e %13.6e %13.6e \n'%(vr,vtheta,vphi[idx_r]))
-    f.write('\n')
-#
-# Write the molecule number density file. 
-#
-abunco = 1e-4
-factco = abunco/(2.3*mp)
-nco    = DM.rho_sph*factco
-with open('numberdens_co.inp','w+') as f:
-    f.write('1\n')                       # Format number
-    f.write('%d\n'%(nr*ntheta*nphi))           # Nr of cells
-    data = nco.ravel(order='F')          # Create a 1-D view, fortran-style indexing
-    data.tofile(f, sep='\n', format="%13.6e")
-    f.write('\n')
+
