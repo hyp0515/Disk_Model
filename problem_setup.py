@@ -22,7 +22,7 @@ from vertical_profile_class import DiskModel_vertical
 Mass_of_star   = 0.5*Msun
 Accretion_rate = 5e-6*Msun/yr
 Radius_of_disk = 50*au
-opacity_table = generate_opacity_table(a_min=0, a_max=10, q=-3.5, dust_to_gas=0.01)
+opacity_table = generate_opacity_table(a_min=0, a_max=1, q=-3.5, dust_to_gas=0.01) # amax is in cm
 disk_property_table = generate_disk_property_table(opacity_table)
 DM = DiskModel_vertical(opacity_table, disk_property_table, Mstar=Mass_of_star, Mdot=Accretion_rate, Rd=Radius_of_disk, Z_max=50*au, Q=1.5, N_R=250, N_Z=250)
 DM.precompute_property(miu=2, factor=1.5)
