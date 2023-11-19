@@ -107,7 +107,7 @@ class DiskModel_vertical:
             so h can be set as an array from 0 to any large number, iterate until the last element of the m_grid
             nearly equal to M, check which h makes the closest value, and set the value to be the h at that radius.
             """
-            h_itr = np.linspace(0.01, 100, 10000)
+            h_itr = np.linspace(0.1, 100, 10000000)
             err = 1
             h_index = 0
 
@@ -117,7 +117,7 @@ class DiskModel_vertical:
                 rho_grid = np.where(z_grid <=h,  # condition
                                     rho_0*np.exp(-(z_grid**2/h_g**2)*(1-(h_r/h))),  # if true
                                     rho_0*np.exp(-((z_grid-h_r)/h_g)**2)*np.exp(-((h-h_r)/h_g)*h_r/h_g))  # if false
-                rho_grid = np.maximum(rho_grid, 1e-15)  # set lower limit of density
+                rho_grid = np.maximum(rho_grid, 1e-10)  # set lower limit of density
                 dz = z_grid*1
                 dz[1:] = z_grid[1:]-z_grid[:-1]
                 m_grid = np.cumsum(rho_grid*dz)  # (2.3) # m_1 sufficiently small and m_ND = M
