@@ -5,7 +5,7 @@ import numpy as np
 au  = 1.49598e13     # Astronomical Unit       [cm]
 pc  = 3.08572e18     # Parsec                  [cm]
 ms  = 1.98892e33     # Solar mass              [g]
-ts  = 5.78e3         # Solar temperature       [K]
+ts  = 5.78e4         # Solar temperature       [K]
 ls  = 3.8525e33      # Solar luminosity        [erg/s]
 rs  = 6.96e10        # Solar radius            [cm]
 #
@@ -23,20 +23,20 @@ class problem_setup:
         opacity_table = generate_opacity_table(a_min=0, a_max=a_max, q=-3.5, dust_to_gas=0.01) # amax in cm
         disk_property_table = generate_disk_property_table(opacity_table)
         DM = DiskModel_vertical(opacity_table, disk_property_table, Mstar=Mass_of_star, Mdot=Accretion_rate, 
-                                Rd=Radius_of_disk, Z_max=100*au, Q=1.5, N_R=250, N_Z=250)
+                                Rd=Radius_of_disk, Z_max=100*au, Q=1.5, N_R=200, N_Z=200)
         DM.precompute_property(miu=2, factor=1.5)
         DM.extend_to_spherical(NTheta=500)
         #
         # Write the wavelength_micron.inp file
         #
-        # lam1     = 0.1e0
-        # lam2     = 7.0e0
-        # lam3     = 25.e0
-        # lam4     = 1.0e4
-        lam1     = 7.5e2
-        lam2     = 3.0e3
-        lam3     = 7.0e3
-        lam4     = 5.0e4
+        lam1     = 0.1e0
+        lam2     = 7.0e0
+        lam3     = 25.e0
+        lam4     = 1.0e4
+        # lam1     = 7.5e2
+        # lam2     = 3.0e3
+        # lam3     = 7.0e3
+        # lam4     = 5.0e4
         n12      = 20
         n23      = 100
         n34      = 30
