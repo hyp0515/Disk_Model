@@ -6,18 +6,21 @@ from scipy.interpolate import interp2d
 
 class DiskModel_vertical:
 
-    def __init__(self, opacity_table, disk_property_table, Mstar, Mdot, Rd, Z_max, Q, N_R, N_Z, cut_r_min = True):
-        """
-        cut_r_min : cut_r_min is to cut the data inside the R_min where Sigma = 0 which makes some calculation errors  
-        """
+    def __init__(self, opacity_table, disk_property_table):
         self.DM_horizontal = DiskModel(opacity_table, disk_property_table)
-        self.load_horizontal_disk_model(Mstar, Mdot, Rd, Q, N_R, cut_r_min)
-        self.make_position_map(Z_max, N_Z, cut_r_min)
         return
     
-    def load_horizontal_disk_model(self, Mstar, Mdot, Rd, Q, N_R, cut_r_min):
+    def input_disk_parameter(self, Mstar, Mdot, Rd, Q, N_R, cut_r_min=True):
         """
-        Run Wenrui's radial profile to get initial properties.
+        Run Wenrui's radial profile to get initial r-dependent profiles.
+
+        Args:
+            Mstar     : mass of protostar
+            Mdot      : rate of mass infall from the envelope onto the disk
+            Rd        : radius of the disk
+            Q         : Toomre index
+            N_R       : resolution of radius grid
+            cut_r_min : cut_r_min is to cut the data inside the R_min where Sigma = 0 which makes some calculation errors
         """
         self.Mstar = Mstar
         self.Mdot = Mdot
@@ -41,27 +44,27 @@ class DiskModel_vertical:
             self.NR = len(self.R_grid)
             self.cut = cut
         self.Q = G*Mstar*(self.R_grid*au)**(-3)  # (2.2) effective vertical gravity
+        self.make_position_map()
         return
     
-    def make_position_map(self, Z_max, NZ, cut_r_min):
+    def make_position_map(self):
         """
         Make vertical grid
         """
-        self.NZ = NZ
-        if cut_r_min:
-            self.NZ = self.NR
+        self.NZ = self.NR
+        Z_max = self.Rd
         Z_grid = np.append(np.logspace(np.log10(Z_max/au), np.log10(0.001), self.NZ-1), 0)
         self.Z_grid = Z_grid[::-1]
         R, Z = np.meshgrid(self.R_grid, self.Z_grid, indexing = 'ij')
         pos_map = np.dstack((R, Z))
         self.pos_map = pos_map
+        self.precompute_property()
         return
     
-    def precompute_property(self, miu, factor):
+    def precompute_property(self, miu=2.3, factor=1):
         """
         To calculate the gas pressure scale height and the radiation pressure scale height
         """
-
         def cg(miu, factor,  T):  # (5.4) sound speed assiciated with the gas pressure
             """
             miu   : mean molecular weight
@@ -107,7 +110,7 @@ class DiskModel_vertical:
             so h can be set as an array from 0 to any large number, iterate until the last element of the m_grid
             nearly equal to M, check which h makes the closest value, and set the value to be the h at that radius.
             """
-            h_itr = np.linspace(0.1, 100, 100000)
+            h_itr = np.linspace(0.01, 100, 1000000)
             err = 1
             h_index = 0
 
@@ -130,7 +133,6 @@ class DiskModel_vertical:
         self.rho_map = rho_map/au  # the divided by au is the made-up of units errors
         self.m_map = m_map
         self.H = h_grid
-
         self.make_tau_and_T_map()
         return
 
@@ -201,9 +203,16 @@ class DiskModel_vertical:
         self.kappa_r_map = kappa_r_map
         return
 
-    def extend_to_spherical(self, NTheta):
+    def pancake_model(self):
+        rho_pancake = 1e-18*np.ones((self.NR, 10))
+        T_pancake = 100*np.ones((self.NR, 10))
+        self.rho_map = np.append(rho_pancake, np.zeros((self.NR, self.NZ-10)), axis=1)
+        self.T_map = np.append(T_pancake, np.zeros((self.NR, self.NZ-10)), axis=1)
+        return
+
+    def extend_to_spherical(self, NTheta, NPhi):
         self.NTheta = NTheta
-        self.NPhi = 20  # Since this model is only axisymmetric so the value of NPhi isn't important
+        self.NPhi = NPhi  # Since this model is only axisymmetric so the value of NPhi isn't important
 
         pos_map = self.pos_map.copy()        
         r_map = np.sqrt(pos_map[:, :, 0]**2+ pos_map[:, :, 1]**2) # distance map of every points
@@ -252,7 +261,7 @@ class DiskModel_vertical:
         """
         mask_condition = r_sph_in_cyl < r_min
         rho_sph_2d[mask_condition] = 1e-5/au
-        T_sph_2d[mask_condition] = 1500
+        T_sph_2d[mask_condition] = 1200
 
         self.rho_sph = rotate_around_theta_axis(mirror_with_r_plane(rho_sph_2d)) 
         self.T_sph = rotate_around_theta_axis(mirror_with_r_plane(T_sph_2d))

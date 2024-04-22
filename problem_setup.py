@@ -1,11 +1,13 @@
 import numpy as np
+from mpl_toolkits.mplot3d import axes3d
+from matplotlib import pyplot as plt
 #
 # Some natural constants
 #
 au  = 1.49598e13     # Astronomical Unit       [cm]
 pc  = 3.08572e18     # Parsec                  [cm]
 ms  = 1.98892e33     # Solar mass              [g]
-ts  = 5.78e4         # Solar temperature       [K]
+ts  = 5.78e3         # Solar temperature       [K]
 ls  = 3.8525e33      # Solar luminosity        [erg/s]
 rs  = 6.96e10        # Solar radius            [cm]
 #
@@ -17,15 +19,19 @@ nphot    = 1000000
 #
 from disk_model import *
 from vertical_profile_class import DiskModel_vertical
-
 class problem_setup:
-    def __init__(self, a_max, Mass_of_star, Accretion_rate, Radius_of_disk):
-        opacity_table = generate_opacity_table(a_min=0, a_max=a_max, q=-3.5, dust_to_gas=0.01) # amax in cm
+    def __init__(self, a_max, Mass_of_star, Accretion_rate, Radius_of_disk, pancake=False):        
+        opacity_table = generate_opacity_table(a_min=0, a_max=a_max, q=-3.5, dust_to_gas=0.01)
         disk_property_table = generate_disk_property_table(opacity_table)
-        DM = DiskModel_vertical(opacity_table, disk_property_table, Mstar=Mass_of_star, Mdot=Accretion_rate, 
-                                Rd=Radius_of_disk, Z_max=100*au, Q=1.5, N_R=200, N_Z=200)
-        DM.precompute_property(miu=2, factor=1.5)
-        DM.extend_to_spherical(NTheta=500)
+
+        DM = DiskModel_vertical(opacity_table, disk_property_table)
+        DM.input_disk_parameter(Mstar=Mass_of_star, Mdot=Accretion_rate,
+                                Rd=Radius_of_disk, Q=1.5, N_R=100)
+        if pancake is True:
+            DM.pancake_model()
+        DM.extend_to_spherical(NTheta=200, NPhi=200)
+        self.r_sph = DM.r_sph
+        self.theta_sph = np.delete(DM.theta_sph, DM.NTheta)
         #
         # Write the wavelength_micron.inp file
         #
@@ -33,10 +39,10 @@ class problem_setup:
         lam2     = 7.0e0
         lam3     = 25.e0
         lam4     = 1.0e4
-        # lam1     = 7.5e2
+        # lam1     = 3.0e2
         # lam2     = 3.0e3
-        # lam3     = 7.0e3
-        # lam4     = 5.0e4
+        # lam3     = 3.0e4
+        # lam4     = 3.0e5
         n12      = 20
         n23      = 100
         n34      = 30
@@ -97,7 +103,7 @@ class problem_setup:
             f.write(str(iformat)+'\n')
             f.write('%d\n'%(nr*ntheta*nphi))
             f.write(str(nspec)+'\n')
-            data = DM.rho_sph.ravel(order='F')         # Create a 1-D view, fortran-style indexing
+            data = 0.01*DM.rho_sph.ravel(order='F')         # Create a 1-D view, fortran-style indexing
             data.tofile(f, sep='\n', format="%13.6e")
             f.write('\n')
         #
@@ -116,8 +122,9 @@ class problem_setup:
         with open('radmc3d.inp','w+') as f:
             f.write('nphot = %d\n'%(nphot))
             f.write('scattering_mode_max = 0\n')   # Put this to 1 for isotropic scattering
-            f.write('iranfreqmode = 1\n')
+            # f.write('iranfreqmode = 1\n')
             f.write('istar_sphere = 1\n')
+            f.write('tgas_eq_tdust = 1\n')
         #
         # Write dust opacity files
         #
@@ -143,19 +150,4 @@ class problem_setup:
             f.write('1                          Way in which this dust species is read\n')
             f.write('0                          0=Thermal grain\n')
             f.write('silicate                   Extension of name of dustkappa_***.inp file\n')
-            f.write('----------------------------------------------------------------------------\n')
-            f.write('1                          Way in which this dust species is read\n')
-            f.write('0                          0=Thermal grain\n')
-            f.write('water                      Extension of name of dustkappa_***.inp file\n')
-            f.write('----------------------------------------------------------------------------\n')
-            f.write('1                          Way in which this dust species is read\n')
-            f.write('0                          0=Thermal grain\n')
-            f.write('troilite                   Extension of name of dustkappa_***.inp file\n')
-            f.write('----------------------------------------------------------------------------\n')
-            f.write('1                          Way in which this dust species is read\n')
-            f.write('0                          0=Thermal grain\n')
-            f.write('refractory_organics        Extension of name of dustkappa_***.inp file\n')
-            f.write('----------------------------------------------------------------------------\n')
-        
         return
-
