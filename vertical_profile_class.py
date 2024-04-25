@@ -127,10 +127,10 @@ class DiskModel_vertical:
                 err = np.abs(1-m_grid[-1]/M[r])
                 h_index +=1                
             h_grid[r] = h_itr[h_index-1]
-            rho_map[r, :] = rho_grid
+            rho_map[r, :] = rho_grid/au
             m_map[r, :] = m_grid[::-1]
 
-        self.rho_map = rho_map/au  # the divided by au is the made-up of units errors
+        self.rho_map = rho_map
         self.m_map = m_map
         self.H = h_grid
         self.make_tau_and_T_map()

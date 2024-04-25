@@ -35,14 +35,14 @@ class problem_setup:
         #
         # Write the wavelength_micron.inp file
         #
-        lam1     = 0.1e0
-        lam2     = 7.0e0
-        lam3     = 25.e0
-        lam4     = 1.0e4
-        # lam1     = 3.0e2
-        # lam2     = 3.0e3
-        # lam3     = 3.0e4
-        # lam4     = 3.0e5
+        # lam1     = 0.1e0
+        # lam2     = 7.0e0
+        # lam3     = 25.e0
+        # lam4     = 1.0e4
+        lam1     = 3.0e2
+        lam2     = 3.0e3
+        lam3     = 3.0e4
+        lam4     = 3.0e5
         n12      = 20
         n23      = 100
         n34      = 30
@@ -103,7 +103,7 @@ class problem_setup:
             f.write(str(iformat)+'\n')
             f.write('%d\n'%(nr*ntheta*nphi))
             f.write(str(nspec)+'\n')
-            data = 0.01*DM.rho_sph.ravel(order='F')         # Create a 1-D view, fortran-style indexing
+            data = 0.000001*DM.rho_sph.ravel(order='F')         # Create a 1-D view, fortran-style indexing
             data.tofile(f, sep='\n', format="%13.6e")
             f.write('\n')
         #
