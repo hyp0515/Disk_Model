@@ -29,7 +29,7 @@ class problem_setup:
                                 Rd=Radius_of_disk, Q=1.5, N_R=100)
         if pancake is True:
             DM.pancake_model()
-        DM.extend_to_spherical(NTheta=200, NPhi=200)
+        DM.extend_to_spherical(NTheta=200, NPhi=10)
         self.r_sph = DM.r_sph
         self.theta_sph = np.delete(DM.theta_sph, DM.NTheta)
         #

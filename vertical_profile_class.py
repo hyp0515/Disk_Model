@@ -26,24 +26,25 @@ class DiskModel_vertical:
         self.Mstar = Mstar
         self.Mdot = Mdot
         self.Rd = Rd        
-        self.NR = N_R        
+        self.NR = N_R
+
         self.DM_horizontal.generate_disk_profile(Mstar=self.Mstar, Mdot=self.Mdot, Rd=self.Rd, Q=Q, N_R=self.NR)
-        self.R_grid = self.DM_horizontal.R[1:]/au  # radial grid
-        self.T_mid = self.DM_horizontal.T_mid  # temperature at midplane(z=0)
-        self.T_eff = self.DM_horizontal.T_eff  # effective temperature extracted from Wenrui's disk_model
-        self.M = self.DM_horizontal.Sigma/2  # Sigma/2 is the definition of M in Hubeny+90
+        self.R_grid    = self.DM_horizontal.R[1:]/au  # radial grid
+        self.T_mid     = self.DM_horizontal.T_mid  # temperature at midplane(z=0)
+        self.T_eff     = self.DM_horizontal.T_eff  # effective temperature extracted from Wenrui's disk_model
+        self.M         = self.DM_horizontal.Sigma/2  # Sigma/2 is the definition of M in Hubeny+90
         self.tau_r_mid = self.DM_horizontal.tau_r_mid
         self.tau_p_mid = self.DM_horizontal.tau_p_mid
         if cut_r_min:
             cut = np.argmax(self.M > 0)
-            self.R_grid = self.R_grid[cut:]
-            self.T_mid = self.T_mid[cut:]
-            self.T_eff = self.T_eff[cut:]
-            self.M = self.M[cut:]
+            self.R_grid    = self.R_grid[cut:]
+            self.T_mid     = self.T_mid[cut:]
+            self.T_eff     = self.T_eff[cut:]
+            self.M         = self.M[cut:]
             self.tau_p_mid = self.tau_p_mid[cut:]
             self.tau_r_mid = self.tau_r_mid[cut:]
             self.NR = len(self.R_grid)
-            self.cut = cut
+            # self.cut = cut
         self.Q = G*Mstar*(self.R_grid*au)**(-3)  # (2.2) effective vertical gravity
         self.make_position_map()
         return
@@ -150,13 +151,15 @@ class DiskModel_vertical:
         for r in range(self.NR):
             z_grid = self.Z_grid
             h_g = self.H_g[r]
-
+            '''
+            Using scipy.optimize.minimize_scalar to find h to prevent loops
+            '''
             result = minimize_scalar(mass_error, bounds=(0.01, 100), args=(z_grid, M[r], h_g), method='bounded')
             h = result.x
 
             rho_0 = M[r] / h
             rho_grid = rho_0 * np.exp(-(z_grid**2 / h_g**2))
-            rho_grid = np.maximum(rho_grid, 1e-15)
+            rho_grid = np.maximum(rho_grid, 1e-10)
             dz = np.diff(z_grid, prepend=z_grid[0])
             m_grid = np.cumsum(rho_grid * dz)
 
@@ -213,17 +216,15 @@ class DiskModel_vertical:
                 else:
                     T_old = T_grid[-1]
 
-                err = 1
-                n_itr = 0
-                n_itr_max = 50
                 # iterate until T_new = T_old
-                while err > 1e-10 and n_itr < n_itr_max:
+                for _ in range(50):
                     kappa_r_grid[z] = get_kappa_from_T(T_old)
                     tau_r = get_tau_from_kappa(m_grid, kappa_r_grid)
                     T_new = get_T_from_tau(r, tau_r, t_eff)
-                    err = np.abs(1-T_new/T_old)
-                    n_itr +=1
+                    if np.abs(1-T_new/T_old) < 1e-10:
+                        break
                     T_old = T_new
+                
                 T_grid = np.append(T_grid, T_new)
                 tau_r_grid = np.append(tau_r_grid, tau_r)
                 kappa_r_grid = np.append(kappa_r_grid, get_kappa_from_T(T_new))
