@@ -125,6 +125,7 @@ class problem_setup:
             # f.write('iranfreqmode = 1\n')
             f.write('istar_sphere = 1\n')
             f.write('tgas_eq_tdust = 1\n')
+            f.write('setthreads = 8\n')
         #
         # Write dust opacity files
         #
@@ -134,7 +135,8 @@ class problem_setup:
         kappa_abs = opacity_table['kappa']
         kappa_sca = opacity_table['kappa_s']
         g         = opacity_table['g']
-        for idx, composition in enumerate(['water','silicate','troilite','refractory_organics']):
+        # for idx, composition in enumerate(['water','silicate','troilite','refractory_organics']):
+        for idx, composition in enumerate(['silicate']): # for now, only silicate is considered
             with open('dustkappa_'+composition+'.inp', "w+") as f:
                 f.write(str(iformat)+'\n')
                 f.write(str(nlam)+'\n')
