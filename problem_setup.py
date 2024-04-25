@@ -103,7 +103,7 @@ class problem_setup:
             f.write(str(iformat)+'\n')
             f.write('%d\n'%(nr*ntheta*nphi))
             f.write(str(nspec)+'\n')
-            data = 0.000001*DM.rho_sph.ravel(order='F')         # Create a 1-D view, fortran-style indexing
+            data = 0.01*DM.rho_sph.ravel(order='F')         # Create a 1-D view, fortran-style indexing
             data.tofile(f, sep='\n', format="%13.6e")
             f.write('\n')
         #
