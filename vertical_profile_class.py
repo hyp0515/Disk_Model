@@ -93,7 +93,51 @@ class DiskModel_vertical:
         self.H_r, self.kappa_r = H_r(self.T_eff, self.Q)
         self.make_rho_and_m_map()
         return
-        
+    
+    # def make_rho_and_m_map(self):
+    #     """
+    #     Calculate volumn density and mass-depth scale
+    #     """
+    #     M = self.M*1
+    #     h_grid = np.empty((self.NR))
+    #     rho_map = np.empty((self.NR, self.NZ))
+    #     m_map = np.empty((self.NR, self.NZ))
+    #     for r in range(self.NR):
+    #         z_grid = self.Z_grid
+    #         h_g = self.H_g[r]
+    #         h_r = self.H_r[r]
+    #         """
+    #         A simple method to find h: 
+    #         Different h can cause the last element of the m_grid unequal to M, 
+    #         so h can be set as an array from 0 to any large number, iterate until the last element of the m_grid
+    #         nearly equal to M, check which h makes the closest value, and set the value to be the h at that radius.
+    #         """
+    #         h_itr = np.linspace(0.01, 100, 1000000)
+    #         err = 1
+    #         h_index = 0
+
+    #         while err > 0.01:
+    #             h = h_itr[h_index]
+    #             rho_0 = M[r]/h
+    #             rho_grid = np.where(z_grid <=h,  # condition
+    #                                 rho_0*np.exp(-(z_grid**2/h_g**2)*(1-(h_r/h))),  # if true
+    #                                 rho_0*np.exp(-((z_grid-h_r)/h_g)**2)*np.exp(-((h-h_r)/h_g)*h_r/h_g))  # if false
+    #             rho_grid = np.maximum(rho_grid, 1e-10)  # set lower limit of density
+    #             dz = z_grid*1
+    #             dz[1:] = z_grid[1:]-z_grid[:-1]
+    #             m_grid = np.cumsum(rho_grid*dz)  # (2.3) # m_1 sufficiently small and m_ND = M
+    #             err = np.abs(1-m_grid[-1]/M[r])
+    #             h_index +=1                
+    #         h_grid[r] = h_itr[h_index-1]
+    #         rho_map[r, :] = rho_grid/au
+    #         m_map[r, :] = m_grid[::-1]
+
+    #     self.rho_map = rho_map
+    #     self.m_map = m_map
+    #     self.H = h_grid
+    #     self.make_tau_and_T_map()
+    #     return
+
     # def make_rho_and_m_map(self):
     #     """
     #     Calculate volumn density and mass-depth scale
@@ -139,6 +183,7 @@ class DiskModel_vertical:
         h_grid = np.empty((self.NR))
         rho_map = np.empty((self.NR, self.NZ))
         m_map = np.empty((self.NR, self.NZ))
+
         def mass_error(h, z_grid, M_r, h_g):
             rho_0 = M_r / h
             rho_grid = rho_0 * np.exp(-(z_grid**2 / h_g**2))
@@ -152,7 +197,7 @@ class DiskModel_vertical:
             z_grid = self.Z_grid
             h_g = self.H_g[r]
             '''
-            Using scipy.optimize.minimize_scalar to find h to prevent loops
+            Using scipy.optimize.minimize_scalar to numerically find h to prevent loops
             '''
             result = minimize_scalar(mass_error, bounds=(0.01, 100), args=(z_grid, M[r], h_g), method='bounded')
             h = result.x
@@ -317,5 +362,6 @@ class DiskModel_vertical:
         theta_sph_grid = make_boundary(self.theta_sph)
         theta_sph_grid = np.delete(theta_sph_grid, self.NTheta)
         self.theta_sph_grid = theta_sph_grid
+        self.theta_sph = np.delete(self.theta_sph, self.NTheta)
         self.phi_sph_grid = np.linspace(0, 2*np.pi, self.NPhi+1)        
         return

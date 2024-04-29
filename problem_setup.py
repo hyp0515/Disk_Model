@@ -24,14 +24,16 @@ class problem_setup:
         opacity_table = generate_opacity_table(a_min=0, a_max=a_max, q=-3.5, dust_to_gas=0.01)
         disk_property_table = generate_disk_property_table(opacity_table)
 
+
         DM = DiskModel_vertical(opacity_table, disk_property_table)
         DM.input_disk_parameter(Mstar=Mass_of_star, Mdot=Accretion_rate,
                                 Rd=Radius_of_disk, Q=1.5, N_R=100)
-        if pancake is True:
+        
+        if pancake is True:  # Constant density and temperature all over the disk
             DM.pancake_model()
+
         DM.extend_to_spherical(NTheta=200, NPhi=10)
-        self.r_sph = DM.r_sph
-        self.theta_sph = np.delete(DM.theta_sph, DM.NTheta)
+        self.DM = DM
         #
         # Write the wavelength_micron.inp file
         #
