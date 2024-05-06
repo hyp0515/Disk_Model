@@ -12,15 +12,15 @@ def plot_sed(plot_nu=True, GHz=True, mjy=True):
 
     s = readSpectrum('spectrum.out')
     lam = s[:, 0]
-    fnu = s[:, 1]
+    fnu = s[:, 1]/(140*140)
     if mjy is True:
         fnu = 1e26*fnu
         plt.ylabel('$ Flux Density \; [mJy]$')
-        plt.ylim((1e-1, 1e7))
+        plt.ylim((1e-2, 1e4))
     else:
         fnu = 1e23*fnu
         plt.ylabel('$ Flux Density \; [Jy]$')
-        plt.ylim((1e-4, 1e4))
+        plt.ylim((1e-5, 1e1))
 
     if plot_nu is True:
         nu = (1e-2*cc)/(1e-6*lam)
@@ -32,7 +32,7 @@ def plot_sed(plot_nu=True, GHz=True, mjy=True):
         fig = plt.plot(nu, fnu)
         plt.yscale('log')
         plt.xscale('log')
-        plt.xlim((1e0, 1e3))
+        plt.xlim((5e1, 1e3))
     else:
         fig = plt.plot(lam, fnu)
         plt.xlabel('$\\lambda [mm]$')

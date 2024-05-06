@@ -41,7 +41,7 @@ Checking the consistency between X22 model and its extension
 
 
 # Density (spherical coordinates)
-p = problem_setup(a_max=0.01, Mass_of_star=0.14*Msun, Accretion_rate=0.14e-5*Msun/yr, Radius_of_disk=30*au, pancake=False)
+p = problem_setup(a_max=0.01, Mass_of_star=.14*Msun, Accretion_rate=.14e-5*Msun/yr, Radius_of_disk=30*au, pancake=False)
 rho = p.DM.rho_sph[:, :, 0]
 
 r = p.DM.r_sph*au
