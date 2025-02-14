@@ -8,7 +8,8 @@ data_dict = {
         "bmin"  : 0.58,
         "bpa"   : -90,
         "flux"  : 59.7,  # mJy,
-        "peak"  : 53.44  # mJy/beam
+        "peak"  : 53.44,  # mJy/beam,
+        "npix"  : 6000
     },
 
     "1.2_faust": {
@@ -20,7 +21,8 @@ data_dict = {
         "bmin"  : 0.58,
         "bpa"   : -90,
         "flux"  : 66.3,  # mJy
-        "peak"  : 58.54  # mJy/beam
+        "peak"  : 58.54,  # mJy/beam
+        "npix"  : 2560
     },
 
     "3.2_faust": {
@@ -32,7 +34,8 @@ data_dict = {
         "bmin"  : 0.58,
         "bpa"   : -90,
         "flux"  : 7.7,  # mJy
-        "peak"  : 7.07  # mJy/beam
+        "peak"  : 7.07,  # mJy/beam
+        "npix"  : 2560
     },
 
     "1.3_edisk": {
@@ -44,10 +47,15 @@ data_dict = {
         "bmin"  : 0.274,
         "bpa"   : 69.4,
         "flux"  : 51.6,  # mJy
-        "peak"  : 4.04  # mJy/beam
+        "peak"  : 4.04,  # mJy/beam
+        "npix"  : 2560
     },
 
     "ch3oh_218_faust": {
         "fname" : '~/project_data/cb68_faust_line/CB68_218.440GHz_CH3OH_joint_0.5_clean.image.pbcor.common.fits',
+        "bmaj"  : 0.497,
+        "bmin"  : 0.385,
+        "bpa"   : -62.5,
+        "npix"  : 1500
     }
 }

@@ -29,8 +29,8 @@ niter = 100000     # Number of iterations
 Initialize observation data
 """
 fit_data    = [data_dict["1.3_edisk"], data_dict["3.2_faust"]]
-lam_list    = [fit_data[0]["wav"], fit_data[1]["wav"]]
-sigma_list  = [fit_data[0]["sigma"], fit_data[1]["sigma"]]
+lam_list = [fit_data[i]["wav"] for i in range(len(fit_data))]
+sigma_list  = [fit_data[i]["sigma"] for i in range(len(fit_data))]
 disk_posang = 45
 desire_size = [50, 250]
 
@@ -231,40 +231,50 @@ def debugger(theta=(-1, np.log10(5e-7), 1.5)):
         log_likelihood = np.sum(dlog_likelihood*beam_per_pix)
         return log_likelihood
 
-    fig, ax = plt.subplots(2, 3, figsize=(15, 10))
-    vmax = [0.004, 0.007]
+    # fig, ax = plt.subplots(2, 3, figsize=(15, 10))
+    # vmax = [0.004, 0.007]
     for i in range(2):
         mask = observation_data[i] < 10*sigma_list[i]
         observation_data[i][mask] = 0
         model_image_list[i][mask.T] = 0
-        observation = ax[i, 0].imshow(observation_data[i], cmap='jet', origin='lower', vmax=vmax[i], vmin=0)
-        ax[i, 0].set_title(f'Observation {i+1}')
-        ax[i, 0].axis('off')
-        colorbar = fig.colorbar(observation, ax=ax[i, 0], pad=0.00, aspect=30, shrink=.98)
-        beam_major_pixels = beam_axis[i][0]*npix[i]*140/size_au[i]
-        beam_minor_pixels = beam_axis[i][1]*npix[i]*140/size_au[i]
-        beam = Ellipse((10, 10), width=beam_minor_pixels, height=beam_major_pixels,
-               angle=beam_pa[i], edgecolor='w', facecolor='w', lw=1.5, fill=True)
-        ax[i, 0].add_patch(beam)
+        # observation = ax[i, 0].imshow(observation_data[i], cmap='jet', origin='lower', vmax=vmax[i], vmin=0)
+        # ax[i, 0].set_title(f'Observation {i+1}')
+        # ax[i, 0].axis('off')
+        # colorbar = fig.colorbar(observation, ax=ax[i, 0], pad=0.00, aspect=30, shrink=.98)
+        # beam_major_pixels = beam_axis[i][0]*npix[i]*140/size_au[i]
+        # beam_minor_pixels = beam_axis[i][1]*npix[i]*140/size_au[i]
+        # beam = Ellipse((10, 10), width=beam_minor_pixels, height=beam_major_pixels,
+        #        angle=beam_pa[i], edgecolor='w', facecolor='w', lw=1.5, fill=True)
+        # ax[i, 0].add_patch(beam)
 
-        model = ax[i, 1].imshow(model_image_list[i].T, cmap='jet', origin='lower', vmax=vmax[i], vmin=0)
-        ax[i, 1].set_title(f'Model {i+1}')
-        ax[i, 1].axis('off')
-        colorbar = fig.colorbar(model, ax=ax[i, 1], pad=0.00, aspect=30, shrink=.98)
-        beam = Ellipse((10, 10), width=beam_minor_pixels, height=beam_major_pixels,
-               angle=beam_pa[i], edgecolor='w', facecolor='w', lw=1.5, fill=True)
-        ax[i, 1].add_patch(beam)
+        # model = ax[i, 1].imshow(model_image_list[i].T, cmap='jet', origin='lower', vmax=vmax[i], vmin=0)
+        # ax[i, 1].set_title(f'Model {i+1}')
+        # ax[i, 1].axis('off')
+        # colorbar = fig.colorbar(model, ax=ax[i, 1], pad=0.00, aspect=30, shrink=.98)
+        # beam = Ellipse((10, 10), width=beam_minor_pixels, height=beam_major_pixels,
+        #        angle=beam_pa[i], edgecolor='w', facecolor='w', lw=1.5, fill=True)
+        # ax[i, 1].add_patch(beam)
 
-        chi_map = ax[i, 2].imshow(ll(observation_data[i], model_image_list[i].T, beam_per_pix[i], sigma_list[i]),
-                                   cmap='jet', origin='lower')
-        ax[i, 2].set_title(f'chi')
-        ax[i, 2].axis('off')
-        colorbar = fig.colorbar(chi_map, ax=ax[i, 2], pad=0.00, aspect=30, shrink=.98)
-        plt.show()
-
-        
-        
+        # chi_map = ax[i, 2].imshow(ll(observation_data[i], model_image_list[i].T, beam_per_pix[i], sigma_list[i]),
+        #                            cmap='jet', origin='lower')
+        # ax[i, 2].set_title(f'chi')
+        # ax[i, 2].axis('off')
+        # colorbar = fig.colorbar(chi_map, ax=ax[i, 2], pad=0.00, aspect=30, shrink=.98)
+        # plt.show()
+        chisq1 = (observation_data[i]-model_image_list[i].T)**2/(2*sigma_list[i]**2)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            chisq2 = np.log(observation_data[i]/model_image_list[i].T)**2 / (2*(np.log(2)/2)**2)
+        chisq2 = np.nan_to_num(chisq2, nan=1e6)
+        chisq = np.minimum(chisq1, chisq2)
+        chisq = chisq1
+        # chisq = (observation_data[i]-model_image_list[i].T)**2/(2*sigma_list[i]**2)
+        is_disk = observation_data[i] > 10*sigma_list[i]
+        mean_chisq = np.sum(chisq*is_disk*beam_per_pix[i])/np.sum(is_disk)
+        print(mean_chisq)
+        # print(np.max(observation_data[i]), np.max(model_image_list[i].T))
         print(ll(observation_data[i], model_image_list[i].T, beam_per_pix[i], sigma_list[i]))
+        
 
 """
 MCMC
@@ -286,5 +296,5 @@ def mcmc():
                                         backend=backend)
         sampler.run_mcmc(pos, niter, progress=True)
 
-# debugger()
-mcmc()
+debugger()
+# mcmc()

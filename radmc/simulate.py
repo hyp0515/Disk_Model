@@ -7,10 +7,10 @@ from radmc3dPy.data import *
 class generate_simulation:
     
     def __init__(self, parms,
-                 channel=True,
-                 pv=True,
-                 conti=True,
-                 sed=True,
+                 channel=False,
+                 pv=False,
+                 conti=False,
+                 sed=False,
                  line_spectrum=False
                  ):
         
