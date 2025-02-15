@@ -97,10 +97,11 @@ def disk_model(parms):
                             incl_dust=1,
                             incl_lines=1,
                             nphot=500000,
-                            nphot_scat=500000,
+                            nphot_scat=1000000,
+                            nphot_spec=100000, 
                             scattering_mode_max=2,
                             istar_sphere=1,
-                            num_cpu=None)
+                            num_cpu=6)
     model.get_linecontrol(filename=None,
                         methanol='ch3oh leiden 0 0 0')
     model.get_continuumlambda(filename=None,
@@ -144,11 +145,10 @@ def radmc_sed():
             f.write('%13.6e\n'%(value))
     os.system(f'radmc3d spectrum incl 73 loadlambda noline')
     s = readSpectrum('spectrum.out')
-    lam = s[:, 0]
-    nu = (1e-2*cc)*1e-9/(1e-6*lam) # GHz
+    # lam = s[:, 0]
+    # nu = (1e-2*cc)*1e-9/(1e-6*lam) # GHz
     fnu = s[:, 1]*1e26/(140**2) # mJy
-    return nu[::-1], fnu[::-1]
-
+    return sed_freq_list, fnu[::-1]
 
 def conti_model(theta):
     # Create a temporary directory for model computation
@@ -160,32 +160,31 @@ def conti_model(theta):
     disk_model(theta)
 
     model_image_list, beam_per_pix = radmc_conti()
-    freq_model, flux_model = radmc_sed()
+    freq, flux_model = radmc_sed()
 
 
     # Clean up temporary directory
     os.chdir("../..")
     shutil.rmtree(temp_dir_name)
     
-    return model_image_list, beam_per_pix, freq_model, flux_model
+    return model_image_list, beam_per_pix, freq, flux_model
 
 """
 log_likelihood, log_prior, log_probability
 """
 def log_likelihood(theta, conti_observation, sed_observation, conti_err, sed_err):
     # Compute the model image
-    model_image, beam_per_pix, freq_model, flux_model = conti_model(theta=theta)
+    model_image, beam_per_pix, freq, flux_model = conti_model(theta=theta)
 
 
     log_likelihood = []
     
-
     """
     This log-likelihood function is modified from disk_model.py
     where chi-square is chosen to be the minimum of the two chi-square
     considering the observation error and the model error.
     """
-    def ll(observation, model, beam_per_pix, sigma_obs, sigma_log_model = np.log(2)/2):
+    def ll_conti(observation, model, beam_per_pix, sigma_obs, sigma_log_model = np.log(2)/2):
 
         # These chi-square functions are still needed to be confirmed
 
@@ -199,20 +198,28 @@ def log_likelihood(theta, conti_observation, sed_observation, conti_err, sed_err
         log_likelihood = np.sum(dlog_likelihood*beam_per_pix)
         return log_likelihood
 
-    
+    nu_record  = []
+    fnu_record = [] 
+
+    def ll_sed(freq, flux_observe, flux_model, err):
+        nu_record.append(freq)
+        fnu_record.append(flux_model)
+        np.savez('record.npz',
+            nu  = np.array(nu_record),
+            fnu = np.array(fnu_record))
+        return -0.5 * np.sum((np.array(flux_observe - flux_model) ** 2) / err**2)
+
 
     # Calculate the log likelihood for each observation
     for i in range(len(conti_observation)):
         mask = conti_observation[i] < 10*conti_err[i]
         conti_observation[i][mask] = 0
         model_image[i][mask.T] = 0
-        log_likelihood.append(ll(conti_observation[i], model_image[i].T, beam_per_pix[i], conti_err[i]))
+        log_likelihood.append(ll_conti(conti_observation[i], model_image[i].T, beam_per_pix[i], conti_err[i]))
 
-    def ll_sed():
-        
-        return
+    log_likelihood.append(ll_sed(freq, sed_observation, flux_model, sed_err))
 
-    return np.average(log_likelihood, weights=[0.65, 0.35])
+    return np.average(log_likelihood, weights=[0.5, 0.5])
 
 def log_prior(theta):
     amax, Mdot, Q = theta
@@ -227,76 +234,13 @@ def log_prior(theta):
         return 0.0
     return -np.inf
 
-def log_probability(theta, observation, err):
+def log_probability(theta, conti_observation, sed_observation, conti_err, sed_err):
     # Calculate the log probability
     lp = log_prior(theta)
     if not np.isfinite(lp):
         return -np.inf
-    return lp + log_likelihood(theta, observation, err)
+    return lp + log_likelihood(theta, conti_observation, sed_observation, conti_err, sed_err)
 
-"""
-This is a debugging function to check the whole process
-"""
-def debugger(theta=(-1, np.log10(5e-7), 1.5)):
-
-    model_image_list, beam_per_pix = conti_model(theta)
-
-    def ll(observation, model, beam_per_pix, sigma_obs, sigma_log_model = np.log(2)/2):
-
-        chisq1 = (observation-model)**2/(2*sigma_obs**2)
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            chisq2 = np.log(observation/model)**2 / (2*sigma_log_model**2)
-        chisq2 = np.nan_to_num(chisq2, nan=1e6)
-        chisq = np.minimum(chisq1, chisq2)
-        dlog_likelihood =  - chisq
-        log_likelihood = np.sum(dlog_likelihood*beam_per_pix)
-        return log_likelihood
-
-    # fig, ax = plt.subplots(2, 3, figsize=(15, 10))
-    # vmax = [0.004, 0.007]
-    for i in range(2):
-        mask = observation_data[i] < 10*conti_sigma_list[i]
-        observation_data[i][mask] = 0
-        model_image_list[i][mask.T] = 0
-        # observation = ax[i, 0].imshow(observation_data[i], cmap='jet', origin='lower', vmax=vmax[i], vmin=0)
-        # ax[i, 0].set_title(f'Observation {i+1}')
-        # ax[i, 0].axis('off')
-        # colorbar = fig.colorbar(observation, ax=ax[i, 0], pad=0.00, aspect=30, shrink=.98)
-        # beam_major_pixels = beam_axis[i][0]*npix[i]*140/size_au[i]
-        # beam_minor_pixels = beam_axis[i][1]*npix[i]*140/size_au[i]
-        # beam = Ellipse((10, 10), width=beam_minor_pixels, height=beam_major_pixels,
-        #        angle=beam_pa[i], edgecolor='w', facecolor='w', lw=1.5, fill=True)
-        # ax[i, 0].add_patch(beam)
-
-        # model = ax[i, 1].imshow(model_image_list[i].T, cmap='jet', origin='lower', vmax=vmax[i], vmin=0)
-        # ax[i, 1].set_title(f'Model {i+1}')
-        # ax[i, 1].axis('off')
-        # colorbar = fig.colorbar(model, ax=ax[i, 1], pad=0.00, aspect=30, shrink=.98)
-        # beam = Ellipse((10, 10), width=beam_minor_pixels, height=beam_major_pixels,
-        #        angle=beam_pa[i], edgecolor='w', facecolor='w', lw=1.5, fill=True)
-        # ax[i, 1].add_patch(beam)
-
-        # chi_map = ax[i, 2].imshow(ll(observation_data[i], model_image_list[i].T, beam_per_pix[i], sigma_list[i]),
-        #                            cmap='jet', origin='lower')
-        # ax[i, 2].set_title(f'chi')
-        # ax[i, 2].axis('off')
-        # colorbar = fig.colorbar(chi_map, ax=ax[i, 2], pad=0.00, aspect=30, shrink=.98)
-        # plt.show()
-        chisq1 = (observation_data[i]-model_image_list[i].T)**2/(2*conti_sigma_list[i]**2)
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            chisq2 = np.log(observation_data[i]/model_image_list[i].T)**2 / (2*(np.log(2)/2)**2)
-        chisq2 = np.nan_to_num(chisq2, nan=1e6)
-        chisq = np.minimum(chisq1, chisq2)
-        chisq = chisq1
-        # chisq = (observation_data[i]-model_image_list[i].T)**2/(2*sigma_list[i]**2)
-        is_disk = observation_data[i] > 10*conti_sigma_list[i]
-        mean_chisq = np.sum(chisq*is_disk*beam_per_pix[i])/np.sum(is_disk)
-        print(mean_chisq)
-        # print(np.max(observation_data[i]), np.max(model_image_list[i].T))
-        print(ll(observation_data[i], model_image_list[i].T, beam_per_pix[i], conti_sigma_list[i]))
-        
 
 """
 MCMC
@@ -313,10 +257,12 @@ def mcmc():
         sampler = emcee.EnsembleSampler(nwalkers,
                                         ndim, 
                                         log_probability, 
-                                        args=(observation_data, conti_sigma_list), 
+                                        args=(observation_data,
+                                              conti_sigma_list,
+                                              sed_flux_list,
+                                              sed_err_list), 
                                         pool=pool, 
                                         backend=backend)
         sampler.run_mcmc(pos, niter, progress=True)
 
-debugger()
-# mcmc()
+mcmc()
