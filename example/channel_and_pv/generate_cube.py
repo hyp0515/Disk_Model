@@ -87,7 +87,7 @@ simulate_mutual_parms = {
     "incl"      : 70,
     "line"      : 240,
     "npix"      : 500,
-    "sizeau"    : 280,
+    "sizeau"    : 280,  # 2 arcsec with 140 pc distance
     "v_width"   : 10,
     "vkms"      : 0,
     "v_width"   : 10,
