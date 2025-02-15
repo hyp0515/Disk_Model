@@ -207,7 +207,7 @@ def log_likelihood(theta, conti_observation, sed_observation, conti_err, sed_err
         np.savez('record.npz',
             nu  = np.array(nu_record),
             fnu = np.array(fnu_record))
-        return -0.5 * np.sum((np.array(flux_observe - flux_model) ** 2) / err**2)
+        return -0.5 * np.sum((np.array(flux_observe - flux_model) ** 2) / np.array(err)**2)
 
 
     # Calculate the log likelihood for each observation

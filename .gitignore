@@ -5,3 +5,4 @@ example/continuum_fitting/progress.h5
 example/channel_and_pv/test/*
 example/continuum_and_sed_fitting/temp/*
 example/continuum_and_sed_fitting/progress.h5
+example/continuum_and_sed_fitting/record.npz
