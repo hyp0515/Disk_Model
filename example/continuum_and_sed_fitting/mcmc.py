@@ -143,7 +143,7 @@ def radmc_sed():
         f.write('%d\n'%(nlam))
         for value in lam:
             f.write('%13.6e\n'%(value))
-    os.system(f'radmc3d spectrum incl 73 loadlambda noline')
+    os.system(f'radmc3d spectrum incl 73 loadlambda noline > /dev/null 2>&1')
     s = readSpectrum('spectrum.out')
     # lam = s[:, 0]
     # nu = (1e-2*cc)*1e-9/(1e-6*lam) # GHz

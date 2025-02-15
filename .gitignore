@@ -3,3 +3,5 @@ example/possible_situation/test/*
 example/continuum_fitting/temp/*
 example/continuum_fitting/progress.h5
 example/channel_and_pv/test/*
+example/continuum_and_sed_fitting/temp/*
+example/continuum_and_sed_fitting/progress.h5
