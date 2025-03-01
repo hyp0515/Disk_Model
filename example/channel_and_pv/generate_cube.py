@@ -180,7 +180,7 @@ def initialize_image(fname, convolve=True):
 # model_image_conti.imageJyppix = np.tile(model_image_conti.imageJyppix, (1, 1, im_line.nwav))
 
 # model_image = model_image_line.imageJyppix - model_image_conti.imageJyppix
-# model_image = model_image/(140**2)*(beam_area/pixel_area)
+# model_image = model_image/(140**2)
 # # rotated_image = rotate_image(model_image, 45)
 # # plt.imshow(rotated_image[:, :, 5].T, origin='lower')
 # # plt.show()
@@ -213,6 +213,6 @@ def initialize_image(fname, convolve=True):
 
 # plt.pcolormesh(pv_slice, origin='lower')
 # plt.show()
-# model_image.image = model_image.image/(140**2)*(beam_area/pixel_area)
+# model_image.image = model_image.image/(140**2)
 # im = convolve('./test/outfile/channel_test_scat.out')
 # write_fits(im, './channel_test_scat_noconv.fits')

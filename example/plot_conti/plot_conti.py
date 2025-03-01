@@ -19,7 +19,7 @@ from radmc.setup import *
 from radmc3dPy import *
 
 sys.path.insert(0,'../')
-from fit_with_GIdisk.find_center import find_center
+from conti_fit_x22_builtin.find_center import find_center
 
 
 filename = '~/project_data/cb68_edisk/CB68_SBLB_continuum_robust_0.0.image.tt0.fits'

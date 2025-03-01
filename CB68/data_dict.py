@@ -44,7 +44,7 @@ data_dict = {
         "sigma" : 21e-6,
         "freq"  : 233.8,
         "bmaj"  : 0.0363,
-        "bmin"  : 0.274,
+        "bmin"  : 0.0274,
         "bpa"   : 69.4,
         "flux"  : 51.6,  # mJy
         "peak"  : 4.04,  # mJy/beam

@@ -18,7 +18,6 @@ from X22_model.disk_model import *
 from CB68.data_dict import data_dict
 from radmc.setup import *
 sys.path.insert(0,'../')
-from fit_with_GIdisk.find_center import find_center
 from astropy.coordinates import SkyCoord
 import io
 import contextlib
@@ -134,7 +133,7 @@ def radmc_conti(parms):
         pixel_area = (size_au[i]/npix[i]/140)**2
         beam_area = beam_axis[i][0]*beam_axis[i][1]*np.pi/(4*np.log(2))
         beam_per_pix.append(pixel_area/beam_area)
-        model_image_list.append(model_image.imageJyppix[:, :, 0]/(140**2)*(beam_area/pixel_area))
+        model_image_list.append(model_image.imageJyppix[:, :, 0]/(140**2))
     return model_image_list, beam_per_pix
     
 reader = emcee.backends.HDFBackend("progress.h5")

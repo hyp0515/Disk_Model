@@ -135,7 +135,7 @@ def radmc_conti(parms):
         pixel_area = (size_au[i]/npix[i]/140)**2
         beam_area = beam_axis[i][0]*beam_axis[i][1]*np.pi/(4*np.log(2))
         beam_per_pix.append(pixel_area/beam_area)
-        model_image_list.append(model_image.imageJyppix[:, :, 0]/(140**2)*(beam_area/pixel_area))
+        model_image_list.append(model_image.imageJyppix[:, :, 0]/(140**2))
     return model_image_list, beam_per_pix
 
 def conti_model(theta):
