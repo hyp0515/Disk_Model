@@ -6,3 +6,5 @@ example/channel_and_pv/test/*
 example/continuum_and_sed_fitting/temp/*
 example/continuum_and_sed_fitting/progress.h5
 example/continuum_and_sed_fitting/record.npz
+example/continuum_radial/test/*
+example/radial_fitting/temp/*

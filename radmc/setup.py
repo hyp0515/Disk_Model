@@ -1,4 +1,7 @@
 import numpy as np
+import os
+import io
+import contextlib
 from time import gmtime, strftime
 from multiprocessing import cpu_count
 from radmc3dPy.analyze import *
@@ -543,6 +546,7 @@ class radmc3d_setup:
               f.write('%13.6e %13.6e %13.6e \n'%(vr[idx_r],vtheta,vphi[idx_r]))
             
     def get_heatcontrol(self, L_star = None,
+                              R_star = None,
                            accretion = True,
                          irradiation = True,
                             **kwargs
@@ -563,11 +567,12 @@ class radmc3d_setup:
       heat        : directly assigning heating mechanism by words ('accretion'/'radiation'/'combine')
       '''
 
-      if L_star is None: L_star = 0.86
+      if L_star is None: L_star = 0.89
+      if R_star is None: R_star = 1
       # Star parameters and Write the star.inp file
       mstar    = ms  # This is useless in the current version.
-      rstar    = rs
-      tstar    = ts*(L_star**(1/4))
+      rstar    = rs * R_star
+      tstar    = ts*(L_star**(1/4))*(R_star**(-1/2))
       pstar    = np.array([0.,0.,0.])
       with open('stars.inp','w+') as f:
         f.write('2\n')
@@ -593,8 +598,9 @@ class radmc3d_setup:
       # Heating mechanism
       if irradiation is True:# Irradiation heating calculated by RADMC-3D
         if accretion is False:
-          os.system('radmc3d mctherm')
-          d = readData(dtemp=True, ddens=True)
+          os.system('radmc3d mctherm > /dev/null 2>&1')
+          with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            d = readData(dtemp=True, ddens=True)
           T = np.where(d.dusttemp<20, 20, d.dusttemp)
             
         elif accretion is True:  # Combination of two heating mechanisms, irradiation and accretion
