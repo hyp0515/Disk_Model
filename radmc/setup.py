@@ -489,7 +489,8 @@ class radmc3d_setup:
         
       self.rho_dust = self.dust_to_gas_ratio * np.array(rho_dust)
       self.rho_gas = self.DM.rho_sph
-  
+      self.mask = self.rho_gas < 1e-18
+
       with open('dust_density.inp', "w+") as f:
         f.write(str(1)+'\n')
         f.write('%d\n'%(self.NR*self.NTheta*self.NPhi))
@@ -607,13 +608,14 @@ class radmc3d_setup:
 
           T_acc = np.tile(self.DM.T_sph[:, :, :, np.newaxis], (1, 1, 1, self.dust_spec))
           
-          os.system('radmc3d mctherm')
+          os.system('radmc3d mctherm > /dev/null 2>&1')
           d = readData(dtemp=True)
           T_irr = d.dusttemp
           
           T = (T_irr**4+T_acc**4)**(1/4)
           T = np.where(T<20, 20, T)
-            
+        
+        T[self.mask,:]=20
         with open('dust_temperature.dat', "w+") as f:
           f.write('1\n')
           f.write('%d\n'%(self.NR*self.NTheta*self.NPhi))
@@ -648,7 +650,7 @@ class radmc3d_setup:
             f.write('\n')
           f.write('\n')
             
-        # self.T_avg = np.sum(T, axis=3)/self.dust_spec
+        self.T_avg = np.sum(T, axis=0)/self.dust_spec
         with open('gas_temperature.inp', "w+") as f:
           f.write('1\n')
           f.write('%d\n'%(self.NR*self.NTheta*self.NPhi))
@@ -656,7 +658,7 @@ class radmc3d_setup:
           data = self.DM.T_sph.ravel(order='F')
           data.tofile(f, sep='\n', format="%13.6e")
           f.write('\n')
-        
+      self.T_dust = T
     
     def get_gasdensitycontrol(self, 
                                  abundance   = 1e-10,
@@ -679,7 +681,7 @@ class radmc3d_setup:
       
       if self.rcb is None:  
         if snowline is not None:
-          abunch3oh = np.where(self.DM.T_sph < snowline,
+          abunch3oh = np.where(self.T_avg < snowline,
                                abundance,
                                abundance * enhancement
                                )
@@ -696,7 +698,7 @@ class radmc3d_setup:
       elif self.rcb is not None:  # The main assumption of Oya's velocity field is that there is no gas inside the centrifugal barrier.
         rcb_idx = np.searchsorted(self.DM.r_sph, self.rcb)
         if snowline is not None:
-          abunch3oh = np.where(self.DM.T_sph < snowline,
+          abunch3oh = np.where(self.T_avg < snowline,
                                abundance,
                                abundance * enhancement
                                )
