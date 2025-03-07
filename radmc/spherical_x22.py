@@ -209,7 +209,7 @@ class DiskModel_spherical:
         self.r_sph = r_grid
 
         theta_map = np.arccos(pos_map[:, :, 1]/r_map)
-        theta_min = np.deg2rad(5) # the starting angle of theta
+        theta_min = np.deg2rad(30) # the starting angle of theta
         theta_grid = np.logspace(np.log10(theta_min), np.log10(np.max(theta_map)), NTheta)
         theta_grid = -1*theta_grid + 0.5*np.pi + theta_min
         theta_grid = theta_grid[::-1]       

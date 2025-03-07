@@ -599,7 +599,8 @@ class radmc3d_setup:
       # Heating mechanism
       if irradiation is True:# Irradiation heating calculated by RADMC-3D
         if accretion is False:
-          os.system('radmc3d mctherm > /dev/null 2>&1')
+          # os.system('radmc3d mctherm > /dev/null 2>&1')
+          os.system('radmc3d mctherm')
           with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             d = readData(dtemp=True, ddens=True)
           T = np.where(d.dusttemp<20, 20, d.dusttemp)

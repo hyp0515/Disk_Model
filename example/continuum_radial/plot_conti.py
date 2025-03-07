@@ -55,6 +55,6 @@ for a in a_list:
 # im = image.readImage(fname=f'./test/outfile/conti_a_0.3_irradiation_scat.out')
 # im_conv = im.imConv(dpc=140, fwhm=beam_axis, pa=-69.4)
 # im_conv = rotate_image(im_conv, 45)
-# im_conv[:,npix//2-5//2:npix//2+5//2,0] = np.tile(np.linspace(0, 0.01, npix)[:,np.newaxis], (1, 4))
+# # im_conv[:,npix//2-5//2:npix//2+5//2,0] = np.tile(np.linspace(0, 0.01, npix)[:,np.newaxis], (1, 4))
 # plt.imshow(im_conv[:,:,0].T, origin="lower", cmap="inferno")
 # plt.show()

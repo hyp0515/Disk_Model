@@ -17,8 +17,8 @@ from radmc.setup import *
 from CB68.data_dict import data_dict
 
 n_processes = 20
-nwalkers = 8  # Total number of walkers
-ndim = 4        # Dimension of parameter space
+nwalkers = 10  # Total number of walkers
+ndim = 5        # Dimension of parameter space
 niter = 100000     # Number of iterations
 
 """
@@ -26,10 +26,14 @@ Initialize observation data
 """
 edisk_radial = np.load("edisk_radial.npz")
 sigma_obs = data_dict["1.3_edisk"]["sigma"]
-i_r_obs = edisk_radial["i_r"]
+
 beam_axis = edisk_radial["beam_axis"]
 beam_pa = edisk_radial["beam_pa"]
-npix = len(i_r_obs)
+
+npix = 500
+interp_func = interp1d(np.linspace(0, 1, len(edisk_radial["i_r"])), edisk_radial["i_r"], kind='cubic')
+i_r_obs = interp_func(np.linspace(0, 1, 500))
+
 
 size_au = 80
 disk_posang = 45
@@ -62,7 +66,7 @@ def radial_intensity(image_array, center, width):
     return radial_profile
 
 def radmc_conti(theta):
-    r_star, amax, Mdot, Q = theta
+    l_star, amax, rd, Mdot, Q = theta
 
     
     model = radmc3d_setup(silent=True)
@@ -70,8 +74,8 @@ def radmc_conti(theta):
                             comment=None,
                             incl_dust=1,
                             incl_lines=1,
-                            nphot=100000,
-                            nphot_scat=500000,
+                            nphot=500000,
+                            nphot_scat=1000000,
                             scattering_mode_max=2,
                             istar_sphere=1,
                             num_cpu=10,
@@ -87,13 +91,13 @@ def radmc_conti(theta):
                             a_max=10**amax, 
                             Mass_of_star=0.14, 
                             Accretion_rate=10**Mdot,
-                            Radius_of_disk=30,
+                            Radius_of_disk=rd,
                             Q=Q,
                             NR=200,
                             NTheta=200,
                             NPhi=10)
-    model.get_heatcontrol(L_star=0.89,
-                        R_star=r_star,
+    model.get_heatcontrol(L_star=l_star,
+                        R_star=1,
                         heat="irradiation")
     os.system(f'radmc3d image npix {npix} sizeau {size_au} posang {-disk_posang} incl 73 lambda {wav*1000} noline > /dev/null 2>&1')
     with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
@@ -132,13 +136,13 @@ def log_likelihood(theta, i_r_obs, sigma_obs):
     chisq2 = np.nan_to_num(chisq2, nan=1e6)
     chisq = np.minimum(chisq1, chisq2)
     dlog_likelihood =  - chisq
-    log_likelihood = np.sum(dlog_likelihood)
+    log_likelihood = np.sum(dlog_likelihood*pixel_area/beam_area)
 
     return log_likelihood
 
 
 def log_prior(theta):
-    r_star, amax, Mdot, Q = theta
+    l_star, amax, rd, Mdot, Q = theta
     """
     These priors are chosen relatively wide.
     r_star: 0.1 < r_star < 10 Rsun
@@ -147,7 +151,7 @@ def log_prior(theta):
     Toomre index: 0.5 < Q < 2.5 (gravitationally unstable to stable)
     """
     # Define the prior ranges for the parameters
-    if 0.1 < r_star < 10 and -3 < amax < 3 and -8 < Mdot < -6 and 0.5 < Q < 2.5:
+    if 0.1 < l_star < 50 and -3 < amax < 3 and 20 < rd < 30 and -9 < Mdot < -5 and 0.5 < Q < 2.5:
         return 0.0
     return -np.inf
 
@@ -197,7 +201,7 @@ MCMC
 """
 def mcmc():
     # Initialize the starting positions for the walkers
-    pos = [np.array([1, -1, np.log10(5e-7), 1.5]) + [1e-1, 1e-1, 1e-2, 1e-1] * np.random.randn(ndim) for i in range(nwalkers)]
+    pos = [np.array([1, -2, 25, np.log10(1e-6), 1.]) + [1e-1, 1e-1, 1e-2, 1e-2, 1e-1] * np.random.randn(ndim) for i in range(nwalkers)]
     # File for saving progress
     progress_file = "progress.h5"
     backend = emcee.backends.HDFBackend(progress_file)

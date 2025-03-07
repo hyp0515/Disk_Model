@@ -31,19 +31,20 @@ class general_parameters:
         setattr(self, k, v)
 
 
-def generate_model(amax, heat):
+def generate_model(amax=0.1, l_star=0.89, Q=1, mdot = 1e-7, heat="accretion"):
 
     model = radmc3d_setup(silent=False)
     model.get_mastercontrol(filename=None,
                             comment=None,
                             incl_dust=1,
                             incl_lines=1,
-                            nphot=500000,
-                            nphot_scat=5000000,
+                            nphot=1000000,
+                            nphot_scat=10000000,
                             scattering_mode_max=2,
                             istar_sphere=1,
                             num_cpu=None,
-                            modified_random_walk = 1)
+                            modified_random_walk = 1
+                            )
     model.get_linecontrol(filename=None,
                         methanol='ch3oh leiden 0 0 0')
     model.get_continuumlambda(filename=None,
@@ -54,17 +55,19 @@ def generate_model(amax, heat):
     model.get_diskcontrol(  d_to_g_ratio = 0.01,
                             a_max=amax, 
                             Mass_of_star=0.14, 
-                            Accretion_rate=1e-7,
-                            Radius_of_disk=30,
+                            Accretion_rate=mdot,
+                            Radius_of_disk=25,
                             NR=200,
                             NTheta=200,
                             NPhi=10,
-                            Q=1.5)
+                            Q=Q)
     model.get_vfieldcontrol(Kep=True,
                             vinfall=0.5,
                             Rcb=None,
                             outflow=None)
-    model.get_heatcontrol(L_star=0.89,heat=heat)
+    model.get_heatcontrol(L_star=l_star,
+                          R_star=1,
+                          heat=heat)
     model.get_gasdensitycontrol(abundance=1e-10,
                                 snowline=100,
                                 enhancement=1e5,
@@ -90,7 +93,7 @@ def generate_model(amax, heat):
         "vkms"      : 0,
         "v_width"   : 10,
         "dir"       : './test/',
-        "fname"     : f"a_{amax}_{heat}",
+        "fname"     : f"a_{amax}_Lstar_{l_star}_Q_{Q}_mdot_{mdot}_{heat}",
     }
 
     channel_cube_parms = general_parameters(
