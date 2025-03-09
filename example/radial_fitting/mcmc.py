@@ -16,9 +16,9 @@ from X22_model.disk_model import *
 from radmc.setup import *
 from CB68.data_dict import data_dict
 
-n_processes = 20
-nwalkers = 10  # Total number of walkers
-ndim = 5        # Dimension of parameter space
+n_processes = 22
+nwalkers = 8  # Total number of walkers
+ndim = 4        # Dimension of parameter space
 niter = 100000     # Number of iterations
 
 """
@@ -30,10 +30,10 @@ sigma_obs = data_dict["1.3_edisk"]["sigma"]
 beam_axis = edisk_radial["beam_axis"]
 beam_pa = edisk_radial["beam_pa"]
 
-npix = 500
-interp_func = interp1d(np.linspace(0, 1, len(edisk_radial["i_r"])), edisk_radial["i_r"], kind='cubic')
-i_r_obs = interp_func(np.linspace(0, 1, 500))
-
+# npix = 500
+# interp_func = interp1d(np.linspace(0, 1, len(edisk_radial["i_r"])), edisk_radial["i_r"], kind='cubic')
+i_r_obs = edisk_radial["i_r"]
+npix = len(i_r_obs)
 
 size_au = 80
 disk_posang = 45
@@ -66,7 +66,7 @@ def radial_intensity(image_array, center, width):
     return radial_profile
 
 def radmc_conti(theta):
-    l_star, amax, rd, Mdot, Q = theta
+    l_star, amax, Mdot, Q = theta
 
     
     model = radmc3d_setup(silent=True)
@@ -78,7 +78,7 @@ def radmc_conti(theta):
                             nphot_scat=1000000,
                             scattering_mode_max=2,
                             istar_sphere=1,
-                            num_cpu=10,
+                            num_cpu=5,
                             modified_random_walk=1)
     model.get_linecontrol(filename=None,
                         methanol='ch3oh leiden 0 0 0')
@@ -91,21 +91,24 @@ def radmc_conti(theta):
                             a_max=10**amax, 
                             Mass_of_star=0.14, 
                             Accretion_rate=10**Mdot,
-                            Radius_of_disk=rd,
+                            Radius_of_disk=25,
                             Q=Q,
-                            NR=200,
-                            NTheta=200,
+                            NR=150,
+                            NTheta=100,
                             NPhi=10)
     model.get_heatcontrol(L_star=l_star,
                         R_star=1,
                         heat="irradiation")
     os.system(f'radmc3d image npix {npix} sizeau {size_au} posang {-disk_posang} incl 73 lambda {wav*1000} noline > /dev/null 2>&1')
-    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
-        im = image.readImage()
-    im_conv = im.imConv(dpc=distance_pc, fwhm=beam_axis, pa=-beam_pa)
-    im_conv = rotate_image(im_conv, disk_posang)
-    i_r = radial_intensity(im_conv, npix//2, 10)
-    return i_r*(beam_area/pixel_area)/(distance_pc**2)
+    try:
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            im = image.readImage()
+        im_conv = im.imConv(dpc=distance_pc, fwhm=beam_axis, pa=-beam_pa)
+        im_conv = rotate_image(im_conv, disk_posang)
+        i_r = radial_intensity(im_conv, npix//2, 10)
+        return i_r*(beam_area/pixel_area)/(distance_pc**2)
+    except:
+        return radmc_conti(tuple(np.array(theta)+ [1e-3, 1e-3, 1e-4, 1e-3]*np.random.randn(ndim)))
 
 def conti_model(params):
     # Create a temporary directory for model computation
@@ -118,7 +121,7 @@ def conti_model(params):
     
     # Clean up temporary directory
     os.chdir("../..")
-    shutil.rmtree(temp_dir_name)
+    # shutil.rmtree(temp_dir_name)
     
     return i_r_model
 
@@ -136,13 +139,13 @@ def log_likelihood(theta, i_r_obs, sigma_obs):
     chisq2 = np.nan_to_num(chisq2, nan=1e6)
     chisq = np.minimum(chisq1, chisq2)
     dlog_likelihood =  - chisq
-    log_likelihood = np.sum(dlog_likelihood*pixel_area/beam_area)
+    log_likelihood = np.sum(dlog_likelihood)
 
     return log_likelihood
 
 
 def log_prior(theta):
-    l_star, amax, rd, Mdot, Q = theta
+    l_star, amax, Mdot, Q = theta
     """
     These priors are chosen relatively wide.
     r_star: 0.1 < r_star < 10 Rsun
@@ -151,7 +154,7 @@ def log_prior(theta):
     Toomre index: 0.5 < Q < 2.5 (gravitationally unstable to stable)
     """
     # Define the prior ranges for the parameters
-    if 0.1 < l_star < 50 and -3 < amax < 3 and 20 < rd < 30 and -9 < Mdot < -5 and 0.5 < Q < 2.5:
+    if 0.1 < l_star < 50 and -3 < amax < 3 and -9 < Mdot < -5 and 0.5 < Q < 2.5:
         return 0.0
     return -np.inf
 
@@ -165,20 +168,20 @@ def log_probability(theta, observation, err):
 """
 This is a debugging function to check the whole process
 """
-def debugger(theta=(1, -1, np.log10(5e-7), 1.5)):
+def debugger(theta=(5, np.log10(0.05), np.log10(1e-6), 1.)):
 
-    i_r_model = conti_model(theta=theta)
+    i_r_model = conti_model(params=theta)
     def log_likelihood(i_r_obs, sigma_obs):
         # Compute the model image
         chisq1 = (i_r_obs-i_r_model)**2/(2*sigma_obs**2)
-        sigma_log_model = np.log(2)/2
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            chisq2 = np.log(i_r_obs/i_r_model)**2 / (2*sigma_log_model**2)
-        chisq2 = np.nan_to_num(chisq2, nan=1e6)
-        chisq = np.minimum(chisq1, chisq2)
-        dlog_likelihood =  - chisq
-        log_likelihood = np.sum(dlog_likelihood*pixel_area/beam_area)
+        # sigma_log_model = np.log(2)/2
+        # with warnings.catch_warnings():
+        #     warnings.simplefilter('ignore')
+        #     chisq2 = np.log(i_r_obs/i_r_model)**2 / (2*sigma_log_model**2)
+        # chisq2 = np.nan_to_num(chisq2, nan=1e6)
+        # chisq = np.minimum(chisq1, chisq2)
+        dlog_likelihood =  - chisq1
+        log_likelihood = np.sum(dlog_likelihood)
 
         return log_likelihood
     ll = log_likelihood(i_r_obs, sigma_obs)
@@ -201,7 +204,7 @@ MCMC
 """
 def mcmc():
     # Initialize the starting positions for the walkers
-    pos = [np.array([1, -2, 25, np.log10(1e-6), 1.]) + [1e-1, 1e-1, 1e-2, 1e-2, 1e-1] * np.random.randn(ndim) for i in range(nwalkers)]
+    pos = [np.array([5, np.log10(0.05), np.log10(1e-6), 1.]) + [1e-1, 1e-1, 1e-2, 1e-1] * np.random.randn(ndim) for i in range(nwalkers)]
     # File for saving progress
     progress_file = "progress.h5"
     backend = emcee.backends.HDFBackend(progress_file)
