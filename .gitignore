@@ -9,4 +9,5 @@ example/continuum_and_sed_fitting/record.npz
 example/continuum_radial/test/*
 example/continuum_radial/disk_*/*
 example/radial_fitting_1e-6/temp/*
+example/radial_fitting_1e-6/progress.h5
 example/radial_fitting_1e-7/temp/*

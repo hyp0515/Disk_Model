@@ -71,39 +71,39 @@ def radial_intensity(image_array, center, width):
 def radmc_conti(theta):
     l_star, amax, Q = theta
 
-    
-    model = radmc3d_setup(silent=True)
-    model.get_mastercontrol(filename=None,
-                            comment=None,
-                            incl_dust=1,
-                            incl_lines=1,
-                            nphot=500000,
-                            nphot_scat=1000000,
-                            scattering_mode_max=2,
-                            istar_sphere=1,
-                            num_cpu=8,
-                            modified_random_walk=1)
-    model.get_linecontrol(filename=None,
-                        methanol='ch3oh leiden 0 0 0')
-    model.get_continuumlambda(filename=None,
-                            comment=None,
-                            lambda_micron=None,
-                            append=False,
-                            silent=True)
-    model.get_diskcontrol(  d_to_g_ratio = 0.01,
-                            a_max=10**amax, 
-                            Mass_of_star=0.14, 
-                            Accretion_rate=10**(-6),
-                            Radius_of_disk=25,
-                            Q=Q,
-                            NR=150,
-                            NTheta=100,
-                            NPhi=10)
-    model.get_heatcontrol(L_star=l_star,
-                        R_star=1,
-                        heat="irradiation")
-    os.system(f'radmc3d image npix {npix} sizeau {size_au} posang {-disk_posang} incl 73 lambda {wav*1000} noline > /dev/null 2>&1')
     try:
+        model = radmc3d_setup(silent=True)
+        model.get_mastercontrol(filename=None,
+                                comment=None,
+                                incl_dust=1,
+                                incl_lines=1,
+                                nphot=1000000,
+                                nphot_scat=1000000,
+                                scattering_mode_max=2,
+                                istar_sphere=1,
+                                num_cpu=8,
+                                modified_random_walk=1)
+        model.get_linecontrol(filename=None,
+                            methanol='ch3oh leiden 0 0 0')
+        model.get_continuumlambda(filename=None,
+                                comment=None,
+                                lambda_micron=None,
+                                append=False,
+                                silent=True)
+        model.get_diskcontrol(  d_to_g_ratio = 0.01,
+                                a_max=10**amax, 
+                                Mass_of_star=0.14, 
+                                Accretion_rate=10**(-6),
+                                Radius_of_disk=25,
+                                Q=Q,
+                                NR=150,
+                                NTheta=100,
+                                NPhi=10)
+        model.get_heatcontrol(L_star=10**l_star,
+                            R_star=1,
+                            heat="irradiation")
+        os.system(f'radmc3d image npix {npix} sizeau {size_au} posang {-disk_posang} incl 73 lambda {wav*1000} noline > /dev/null 2>&1')
+    
         with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
             im = image.readImage()
         im_conv = im.imConv(dpc=distance_pc, fwhm=beam_axis, pa=-beam_pa)
@@ -111,7 +111,7 @@ def radmc_conti(theta):
         i_r = radial_intensity(im_conv, None, 10)
         return i_r*(beam_area/pixel_area)/(distance_pc**2)
     except:
-        return radmc_conti(tuple(np.array(theta)+ [1e-3, 1e-3, 1e-4, 1e-3]*np.random.randn(ndim)))
+        return radmc_conti(tuple(np.array(theta)+ [1e-3, 1e-3, 1e-3]*np.random.randn(ndim)))
 
 def conti_model(params):
     # Create a temporary directory for model computation
@@ -157,7 +157,7 @@ def log_prior(theta):
     Toomre index: 0.5 < Q < 2.5 (gravitationally unstable to stable)
     """
     # Define the prior ranges for the parameters
-    if 0.1 < l_star < 50 and -3 < amax < 3 and 0.5 < Q < 2.5:
+    if np.log10(1e-1) < l_star < np.log10(5e1) and -3 < amax < 3 and 0.5 < Q < 2.5:
         return 0.0
     return -np.inf
 
@@ -171,19 +171,19 @@ def log_probability(theta, observation, err):
 """
 This is a debugging function to check the whole process
 """
-def debugger(theta=(5, np.log10(0.05), np.log10(1e-6), 1.)):
+def debugger(theta=(np.log10(5e0), np.log10(0.05), 1.)):
 
     i_r_model = conti_model(params=theta)
     def log_likelihood(i_r_obs, sigma_obs):
         # Compute the model image
         chisq1 = (i_r_obs-i_r_model)**2/(2*sigma_obs**2)
-        # sigma_log_model = np.log(2)/2
-        # with warnings.catch_warnings():
-        #     warnings.simplefilter('ignore')
-        #     chisq2 = np.log(i_r_obs/i_r_model)**2 / (2*sigma_log_model**2)
-        # chisq2 = np.nan_to_num(chisq2, nan=1e6)
-        # chisq = np.minimum(chisq1, chisq2)
-        dlog_likelihood =  - chisq1
+        sigma_log_model = np.log(2)/2
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            chisq2 = np.log(i_r_obs/i_r_model)**2 / (2*sigma_log_model**2)
+        chisq2 = np.nan_to_num(chisq2, nan=1e6)
+        chisq = np.minimum(chisq1, chisq2)
+        dlog_likelihood =  - chisq
         log_likelihood = np.sum(dlog_likelihood)
 
         return log_likelihood
@@ -207,7 +207,7 @@ MCMC
 """
 def mcmc():
     # Initialize the starting positions for the walkers
-    pos = [np.array([5, np.log10(0.05), 1.]) + [1e-1, 1e-1, 1e-1] * np.random.randn(ndim) for i in range(nwalkers)]
+    pos = [np.array([np.log10(5e0), np.log10(0.05), 1.]) + [1e-1, 1e-1, 1e-1] * np.random.randn(ndim) for i in range(nwalkers)]
     # File for saving progress
     progress_file = "progress.h5"
     backend = emcee.backends.HDFBackend(progress_file)
