@@ -92,7 +92,7 @@ def generate_model(amax=0.1, l_star=0.89, Q=1, mdot = 1e-7, heat="accretion"):
         "v_width"   : 10,
         "vkms"      : 0,
         "v_width"   : 10,
-        "dir"       : './test/',
+        "dir"       : './simulation/',
         "fname"     : f"a_{amax}_Lstar_{l_star}_Q_{Q}_mdot_{mdot}_{heat}",
     }
 
