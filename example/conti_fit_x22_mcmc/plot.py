@@ -104,7 +104,7 @@ DI_alma.generate_mock_observation(R=diskmodel.R, I=diskmodel.I_obs[0], cosI=np.c
 fig, ax = plt.subplots(1,3, sharex=True, sharey=False, figsize=(15,5))
 fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
 
-cb68 = ax[0].imshow(DI_alma.img*1e3, cmap='jet', origin='lower', vmin=-0.1, vmax=4)
+cb68 = ax[0].imshow(DI_alma.img*1e3, cmap='plasma', origin='lower', vmin=-0.1, vmax=4)
 colorbar = fig.colorbar(cb68, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
 colorbar.set_label('Intensity (mJy/beam)')
 ax[0].set_xlabel('AU', fontsize=14)
@@ -120,7 +120,7 @@ ax[0].add_patch(beam)
 
 # ax[0].contour(DI_alma.img, levels=[50*40e-6]ors='black', linewidths=0.65)
 
-model = ax[1].imshow(DI_alma.img_model*1e3, cmap='jet', origin='lower', vmin=-0.1, vmax=4)
+model = ax[1].imshow(DI_alma.img_model*1e3, cmap='plasma', origin='lower', vmin=-0.1, vmax=4)
 colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
 colorbar.set_label('Intensity (mJy/beam)')
 beam = Ellipse((120, 10), width=DI_alma.beam_min_au/DI_alma.au_per_pix, height=DI_alma.beam_maj_au/DI_alma.au_per_pix,

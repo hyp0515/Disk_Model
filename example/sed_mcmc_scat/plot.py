@@ -30,15 +30,15 @@ plt.close()
 
 # flat_samples = reader.get_chain(flat=True, discard=100)
 
-flat_samples = reader.get_chain(flat=True, discard=100)
+flat_samples = reader.get_chain(flat=True, discard=4000)
 # flat_samples = reader.get_chain(flat=True, discard=100)
-chains = reader.get_chain(discard=100, flat=False)
+chains = reader.get_chain(discard=4000, flat=False)
 n_steps, n_walkers, n_params = chains.shape
 
 # Calculate acceptance fractions manually
 # Count accepted steps for each walker
 acceptance_fractions = np.mean(
-    np.diff(reader.get_log_prob(discard=100, flat=False), axis=0) != 0, axis=0
+    np.diff(reader.get_log_prob(discard=4000, flat=False), axis=0) != 0, axis=0
 )
 
 # Define a threshold for stuck walkers
@@ -76,8 +76,8 @@ err           = np.array([
                         ])
 
 model = np.load('record.npz')
-nu = model['nu'][::]
-fnu = model['fnu'][::]
+nu = model['nu'][1000::2]
+fnu = model['fnu'][1000::2]
 
 
 for i in range(len(nu)):
@@ -86,6 +86,7 @@ for i in range(len(nu)):
 plt.errorbar(observed_Freq, observed_Flux, yerr=err, fmt=".k", capsize=0)
 plt.xlabel('$\\nu [GHz]$')
 plt.ylabel('Flux density [mJy]')
-plt.ylim((50, 70))
+plt.ylim((57.5, 67.5))
 plt.savefig('plot.pdf', transparent=True)
 plt.close()
+
