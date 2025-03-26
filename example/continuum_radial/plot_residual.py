@@ -55,6 +55,61 @@ def radial_intensity(image_array, center, width):
   return radial_profile
 
 
+def plot_residual(model):
+    
+    
+
+
+    residual = edisk_image - model
+    model_mask = model < 5*sigma
+    mask = mask_cb68 | model_mask
+    
+    chi_sq = np.nansum((model[mask] - edisk_image[mask])**2)
+
+    edisk_image[mask_cb68] = np.nan
+    model[model_mask] = np.nan
+    residual[mask] = np.nan
+    
+    
+
+    fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
+    fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
+
+
+    edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+    colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+    ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+    ax[0].set_xticklabels([-35, 0, 35])
+    ax[0].set_xlabel('Offset [AU]', fontsize=14)
+    ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+    ax[0].set_yticklabels([-35, 0, 35])
+    ax[0].set_ylabel('Offset [AU]', fontsize=14)
+    ax[0].set_title('CB68', fontsize=14)
+
+    model_ax = ax[1].imshow(model*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+    colorbar = fig.colorbar(model_ax, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+    ax[1].set_xlabel('Offset [AU]', fontsize=14)
+    ax[1].set_xticks([0, model.shape[0]//2, model.shape[0]-1])
+    ax[1].set_xticklabels([-35, 0, 35])
+    ax[1].set_title('Model (Radiation)', fontsize=14)
+
+
+    residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
+    colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
+    colorbar.set_label('Intensity (mJy/beam)')
+    ax[2].set_xlabel('Offset [AU]', fontsize=14)
+    ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
+    ax[2].set_xticklabels([-35, 0, 35])
+    ax[2].set_title('Residual', fontsize=14)
+    
+    return chi_sq
+
+# def chi(i_r_model, i_r_obs):
+#     if len(i_r_model) != len(i_r_obs):
+#         interp_func = interp1d(np.linspace(0, 1, len(i_r_model)), i_r_model, kind='cubic')
+#         i_r_model = interp_func(np.linspace(0, 1, len(i_r_obs)))
+#     return np.sum(((i_r_model - i_r_obs)**2)/(21e-6**2))
+
 
 distance_pc = 140
 crop_sizeau = 80
@@ -83,11 +138,78 @@ f_interp_edisk = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, edisk_i
 edisk_image = f_interp_edisk(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
 peak_idx_x_edisk, peak_idx_y_edisk = np.unravel_index(np.argmax(edisk_image, axis=None), edisk_image.shape)
-edisk_image = edisk_image[peak_idx_x_edisk-400:peak_idx_x_edisk+400, peak_idx_y_edisk-400:peak_idx_y_edisk+400]
+edisk_image = edisk_image[peak_idx_x_edisk-438:peak_idx_x_edisk+438, peak_idx_y_edisk-438:peak_idx_y_edisk+438]
+mask_cb68 = edisk_image < 5*sigma
 
 
-mask = edisk_image < 5*sigma
-edisk_image[mask] = np.nan
+
+a_list = [1e-2, 5e-2, 1e-1, 5e-1, 1e0, 1e1]
+L_star_list = [1e-1, 5e-1, 1e0, 3e0, 5e0, 1e1]
+Q_list = [0.1, 0.2, 0.3, 0.5, 1, 1.5]
+mdot_list = [1e-8, 1e-7, 1e-6, 1e-5]
+heat_list = ["radiation", "accretion"]
+
+
+chi_list_irr = []
+idx_list_irr = []
+
+chi_list_acc = []
+idx_list_acc = []
+
+
+
+for idx_a, a in enumerate(a_list):
+    for idx_l, L_star in enumerate(L_star_list):
+        for idx_q, Q in enumerate(Q_list):
+            for idx_mdot, mdot in enumerate(mdot_list):
+                for heat in heat_list:
+                    try:
+                      model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
+                      npix = model_im.nx
+                      pixel_area = (sizeau/npix/140)**2
+                      conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
+                      conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
+                      f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
+                              np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
+                      conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
+                                                  np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
+                      peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
+                      conv_image = conv_image[peak_idx_x_model-438:peak_idx_x_model+438, peak_idx_y_model-438:peak_idx_y_model+438].T
+                      chisq = plot_residual(conv_image)
+
+                      plt.savefig(f'./figures/residuals/{heat}/a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}.pdf', transparent=True)
+                      plt.close("all")
+                      if heat == "radiation":
+                          chi_list_irr.append(chisq)
+                          idx_list_irr.append((idx_a, idx_l, idx_q, idx_mdot))
+                      else:
+                          chi_list_acc.append(chisq)
+                          idx_list_acc.append((idx_a, idx_l, idx_q, idx_mdot))
+                      print(chisq)
+                    except:
+                       pass
+                    
+a_best_idx, L_star_best_idx, Q_best_idx, mdot_best_idx = idx_list_irr[chi_list_irr.index(min(chi_list_irr))]
+a_best = a_list[a_best_idx]
+L_star_best = L_star_list[L_star_best_idx]
+Q_best = Q_list[Q_best_idx]
+mdot_best = mdot_list[mdot_best_idx]
+print(f"Maximum grain size: {a_best} mm")
+print(f"Stellar luminosity: {L_star_best} Lsun")
+print(f"Toomre Q: {Q_best}")
+print(f"Mass accretion rate: {mdot_best} Msun/yr")
+
+
+a_best_idx, L_star_best_idx, Q_best_idx, mdot_best_idx = idx_list_acc[chi_list_acc.index(min(chi_list_acc))]
+a_best = a_list[a_best_idx]
+L_star_best = L_star_list[L_star_best_idx]
+Q_best = Q_list[Q_best_idx]
+mdot_best = mdot_list[mdot_best_idx]
+print(f"Maximum grain size: {a_best} mm")
+print(f"Stellar luminosity: {L_star_best} Lsun")
+print(f"Toomre Q: {Q_best}")
+print(f"Mass accretion rate: {mdot_best} Msun/yr")
+
 # edisk_image = rotate_image(edisk_image, 45)
 
 
@@ -96,286 +218,382 @@ edisk_image[mask] = np.nan
 
 
 
-a = 0.1
-L_star = 5.0
-Q = 0.5
-mdot = 1e-6
-heat = 'radiation'
+# a = 0.1
+# L_star = 5.0
+# Q = 0.5
+# mdot = 1e-6
+# heat = 'radiation'
 
 
-# model = generate_model(a, L_star, Q, mdot, heat = heat)
-model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
-npix = model_im.nx
-pixel_area = (sizeau/npix/140)**2
-conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
-conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
+# model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
+# npix = model_im.nx
+# pixel_area = (sizeau/npix/140)**2
+# conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
+# conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
+# f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
+#         np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
+# conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
+# peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
+# conv_image = conv_image[peak_idx_x_model-438:peak_idx_x_model+438, peak_idx_y_model-438:peak_idx_y_model+438].T
+# plot_residual(conv_image)
 
-f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
-conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
-peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
-conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
+# plt.savefig(f'./figures/residuals/{heat}/a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}.pdf', transparent=True)
+# plt.close("all")
 
-conv_image[mask] = np.nan
+# # model = generate_model(a, L_star, Q, mdot, heat = heat)
+# model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
+# npix = model_im.nx
+# pixel_area = (sizeau/npix/140)**2
+# conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
+# conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
 
-residual = edisk_image - conv_image
+# f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
+# conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
+# peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
+# conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
+
+# conv_image[mask] = np.nan
+
+# residual = edisk_image - conv_image
 
 
 
 
 
-fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
-fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
+# fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
+# fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
 
 
-edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_xlabel('Offset [AU]', fontsize=14)
+# ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
+# ax[0].set_title('CB68', fontsize=14)
+
+# model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[1].set_xlabel('Offset [AU]', fontsize=14)
+# ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
+# ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[1].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
+# ax[1].set_title('Model (Radiation)', fontsize=14)
+
+
+# residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
+# colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
 # colorbar.set_label('Intensity (mJy/beam)')
-ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_xlabel('Offset [AU]', fontsize=14)
-ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_ylabel('Offset [AU]', fontsize=14)
-# ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
-ax[0].set_title('CB68', fontsize=14)
+# ax[2].set_xlabel('Offset [AU]', fontsize=14)
+# ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
+# ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[2].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
+# ax[2].set_title('Residual', fontsize=14)
+# plt.savefig('residual_radiation.pdf',transparent=True)
+# plt.close("all")
 
-model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+
+
+
+# a = 0.1
+# L_star = 3.0
+# Q = 0.5
+# mdot = 1e-5
+# heat = 'radiation'
+
+
+# # model = generate_model(a, L_star, Q, mdot, heat = heat)
+# model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
+# npix = model_im.nx
+# pixel_area = (sizeau/npix/140)**2
+# conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
+# conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
+
+# f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
+# conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
+# peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
+# conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
+
+# conv_image[mask] = np.nan
+
+# residual = edisk_image - conv_image
+
+
+
+
+
+# fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
+# fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
+
+
+# edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_xlabel('Offset [AU]', fontsize=14)
+# ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
+# ax[0].set_title('CB68', fontsize=14)
+
+# model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[1].set_xlabel('Offset [AU]', fontsize=14)
+# ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
+# ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[1].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
+# ax[1].set_title('Model (Radiation)', fontsize=14)
+
+
+# residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
+# colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
 # colorbar.set_label('Intensity (mJy/beam)')
-ax[1].set_xlabel('Offset [AU]', fontsize=14)
-ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
-ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[1].set_ylabel('Offset [AU]', fontsize=14)
-# ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
-ax[1].set_title('Model (Radiation)', fontsize=14)
-
-
-residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
-colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
-colorbar.set_label('Intensity (mJy/beam)')
-ax[2].set_xlabel('Offset [AU]', fontsize=14)
-ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
-ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[2].set_ylabel('Offset [AU]', fontsize=14)
-# ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
-ax[2].set_title('Residual', fontsize=14)
-plt.savefig('residual_radiation.pdf',transparent=True)
-plt.close("all")
-
-
-
-
-a = 0.1
-L_star = 3.0
-Q = 0.5
-mdot = 1e-5
-heat = 'radiation'
-
-
-# model = generate_model(a, L_star, Q, mdot, heat = heat)
-model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
-npix = model_im.nx
-pixel_area = (sizeau/npix/140)**2
-conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
-conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
-
-f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
-conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
-peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
-conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
-
-conv_image[mask] = np.nan
-
-residual = edisk_image - conv_image
+# ax[2].set_xlabel('Offset [AU]', fontsize=14)
+# ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
+# ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[2].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
+# ax[2].set_title('Residual', fontsize=14)
+# plt.savefig('residual_radiation_1e-5.pdf',transparent=True)
+# plt.close("all")
 
 
 
 
 
-fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
-fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
+
+# a = 1.0
+# L_star = 1.0
+# Q = 0.5
+# mdot = 1e-6
+# heat = 'accretion'
 
 
-edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# # model = generate_model(a, L_star, Q, mdot, heat = heat)
+# model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
+# npix = model_im.nx
+# pixel_area = (sizeau/npix/140)**2
+# conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
+# conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
+
+# f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
+# conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
+# peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
+# conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
+# mask_model = conv_image < 5*sigma
+
+# residual = edisk_image - conv_image
+
+# mask = mask_cb68 | mask_model
+
+# edisk_image[mask_cb68] = np.nan
+# conv_image[mask_model] = np.nan
+# residual[mask] = np.nan
+
+
+
+
+
+# fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
+# fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
+
+
+# edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_xlabel('Offset [AU]', fontsize=14)
+# ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
+# ax[0].set_title('CB68', fontsize=14)
+
+# model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[1].set_xlabel('Offset [AU]', fontsize=14)
+# ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
+# ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[1].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
+# ax[1].set_title('Model (Accretion)', fontsize=14)
+
+
+# residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
+# colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
 # colorbar.set_label('Intensity (mJy/beam)')
-ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_xlabel('Offset [AU]', fontsize=14)
-ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_ylabel('Offset [AU]', fontsize=14)
-# ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
-ax[0].set_title('CB68', fontsize=14)
+# ax[2].set_xlabel('Offset [AU]', fontsize=14)
+# ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
+# ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[2].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
+# ax[2].set_title('Residual', fontsize=14)
+# plt.savefig('residual_accretion.pdf',transparent=True)
+# plt.close("all")
 
-model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+
+
+
+
+# a = 10.0
+# L_star = 0.1
+# Q = 0.5
+# mdot = 1e-5
+# heat = 'accretion'
+
+
+# # model = generate_model(a, L_star, Q, mdot, heat = heat)
+# model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
+# npix = model_im.nx
+# pixel_area = (sizeau/npix/140)**2
+# conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
+# conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
+
+# f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
+# conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
+# peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
+# conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
+
+# conv_image[mask] = np.nan
+
+# residual = edisk_image - conv_image
+
+
+
+
+
+# fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
+# fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
+
+
+# edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_xlabel('Offset [AU]', fontsize=14)
+# ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
+# ax[0].set_title('CB68', fontsize=14)
+
+# model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[1].set_xlabel('Offset [AU]', fontsize=14)
+# ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
+# ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[1].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
+# ax[1].set_title('Model (Accretion)', fontsize=14)
+
+
+# residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
+# colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
 # colorbar.set_label('Intensity (mJy/beam)')
-ax[1].set_xlabel('Offset [AU]', fontsize=14)
-ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
-ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[1].set_ylabel('Offset [AU]', fontsize=14)
-# ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
-ax[1].set_title('Model (Radiation)', fontsize=14)
-
-
-residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
-colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
-colorbar.set_label('Intensity (mJy/beam)')
-ax[2].set_xlabel('Offset [AU]', fontsize=14)
-ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
-ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[2].set_ylabel('Offset [AU]', fontsize=14)
-# ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
-ax[2].set_title('Residual', fontsize=14)
-plt.savefig('residual_radiation_1e-5.pdf',transparent=True)
-plt.close("all")
+# ax[2].set_xlabel('Offset [AU]', fontsize=14)
+# ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
+# ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[2].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
+# ax[2].set_title('Residual', fontsize=14)
+# plt.savefig('residual_accretion_1e-5.pdf',transparent=True)
+# plt.close("all")
 
 
 
 
 
 
-a = 1.0
-L_star = 1.0
-Q = 0.5
-mdot = 1e-6
-heat = 'accretion'
 
 
-# model = generate_model(a, L_star, Q, mdot, heat = heat)
-model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
-npix = model_im.nx
-pixel_area = (sizeau/npix/140)**2
-conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
-conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
-
-f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
-conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
-peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
-conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
-
-conv_image[mask] = np.nan
-
-residual = edisk_image - conv_image
+# a = 0.1
+# L_star = 3.0
+# Q = 0.3
+# mdot = 1e-6
+# heat = 'radiation'
 
 
+# # model = generate_model(a, L_star, Q, mdot, heat = heat)
+# model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
+# npix = model_im.nx
+# pixel_area = (sizeau/npix/140)**2
+# conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
+# conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
+
+# f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
+# conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
+#                             np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
+# peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
+# conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
+# mask = conv_image < 5*sigma
+# conv_image[mask] = np.nan
+
+# residual = edisk_image - conv_image
 
 
 
-fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
-fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
 
 
-edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
+# fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
+
+
+# edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_xlabel('Offset [AU]', fontsize=14)
+# ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
+# ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# ax[0].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
+# ax[0].set_title('CB68', fontsize=14)
+
+# model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
+# colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
+# # colorbar.set_label('Intensity (mJy/beam)')
+# ax[1].set_xlabel('Offset [AU]', fontsize=14)
+# ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
+# ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[1].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
+# ax[1].set_title('Model (Radiation)', fontsize=14)
+
+
+# residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
+# colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
 # colorbar.set_label('Intensity (mJy/beam)')
-ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_xlabel('Offset [AU]', fontsize=14)
-ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_ylabel('Offset [AU]', fontsize=14)
-# ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
-ax[0].set_title('CB68', fontsize=14)
-
-model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
-# colorbar.set_label('Intensity (mJy/beam)')
-ax[1].set_xlabel('Offset [AU]', fontsize=14)
-ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
-ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[1].set_ylabel('Offset [AU]', fontsize=14)
-# ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
-ax[1].set_title('Model (Accretion)', fontsize=14)
-
-
-residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
-colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
-colorbar.set_label('Intensity (mJy/beam)')
-ax[2].set_xlabel('Offset [AU]', fontsize=14)
-ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
-ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[2].set_ylabel('Offset [AU]', fontsize=14)
-# ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
-ax[2].set_title('Residual', fontsize=14)
-plt.savefig('residual_accretion.pdf',transparent=True)
-plt.close("all")
-
-
-
-
-
-a = 10.0
-L_star = 0.1
-Q = 0.5
-mdot = 1e-5
-heat = 'accretion'
-
-
-# model = generate_model(a, L_star, Q, mdot, heat = heat)
-model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
-npix = model_im.nx
-pixel_area = (sizeau/npix/140)**2
-conv_image = model_im.imConv(dpc=140, fwhm=beam_axis, pa=-beam_pa)
-conv_image = conv_image.imageJyppix * beam_area/pixel_area/(140**2)
-
-f_interp_model = interp2d(np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[0]),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, conv_image.shape[1]), conv_image, kind='linear')
-conv_image = f_interp_model(np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000),
-                            np.linspace(-(crop_sizeau//2), crop_sizeau//2, 1000))
-peak_idx_x_model, peak_idx_y_model = np.unravel_index(np.argmax(conv_image, axis=None), conv_image.shape)
-conv_image = conv_image[peak_idx_x_model-400:peak_idx_x_model+400, peak_idx_y_model-400:peak_idx_y_model+400].T
-
-conv_image[mask] = np.nan
-
-residual = edisk_image - conv_image
-
-
-
-
-
-fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
-fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
-
-
-edisk = ax[0].imshow(edisk_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(edisk, ax=ax[0], pad=0.00, aspect=30, shrink=.98)
-# colorbar.set_label('Intensity (mJy/beam)')
-ax[0].set_xticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_xlabel('Offset [AU]', fontsize=14)
-ax[0].set_yticks([0, edisk_image.shape[0]//2, edisk_image.shape[0]-1])
-ax[0].set_yticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-ax[0].set_ylabel('Offset [AU]', fontsize=14)
-# ax[0].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[0].transAxes, fontsize=14, color='black')
-ax[0].set_title('CB68', fontsize=14)
-
-model = ax[1].imshow(conv_image*1e3, origin='lower', cmap='plasma', vmin=0, vmax=5)
-colorbar = fig.colorbar(model, ax=ax[1], pad=0.00, aspect=30, shrink=.98)
-# colorbar.set_label('Intensity (mJy/beam)')
-ax[1].set_xlabel('Offset [AU]', fontsize=14)
-ax[1].set_xticks([0, conv_image.shape[0]//2, conv_image.shape[0]-1])
-ax[1].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[1].set_ylabel('Offset [AU]', fontsize=14)
-# ax[1].text(0.9, 0.9, 'eDisk (1.3 mm)', transform=ax[1].transAxes, fontsize=14, color='black')
-ax[1].set_title('Model (Accretion)', fontsize=14)
-
-
-residual_ax = ax[2].imshow(residual*1e3, origin='lower', cmap = residual_cmp, vmin=-2, vmax=2)
-colorbar = fig.colorbar(residual_ax, ax=ax[2], pad=0.00, aspect=30, shrink=.98)
-colorbar.set_label('Intensity (mJy/beam)')
-ax[2].set_xlabel('Offset [AU]', fontsize=14)
-ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
-ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
-# ax[2].set_ylabel('Offset [AU]', fontsize=14)
-# ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
-ax[2].set_title('Residual', fontsize=14)
-plt.savefig('residual_accretion_1e-5.pdf',transparent=True)
-plt.close("all")
+# ax[2].set_xlabel('Offset [AU]', fontsize=14)
+# ax[2].set_xticks([0, residual.shape[0]//2, residual.shape[0]-1])
+# ax[2].set_xticklabels([-np.round(sizeau//2), 0, np.round(sizeau//2)])
+# # ax[2].set_ylabel('Offset [AU]', fontsize=14)
+# # ax[2].text(0.7, 0.7, 'Residual', transform=ax[2].transAxes, fontsize=14, color='black')
+# ax[2].set_title('Residual', fontsize=14)
+# plt.savefig('residual_radiation_Q_0.3.pdf',transparent=True)
+# plt.close("all")
