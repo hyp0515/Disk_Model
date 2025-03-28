@@ -64,7 +64,7 @@ def plot_residual(model):
     model_mask = model < 5*sigma
     mask = mask_cb68 | model_mask
     
-    chi_sq = np.nansum((model[mask] - edisk_image[mask])**2)
+    chi_sq = np.nansum((model[mask] - edisk_image[mask])**2)/np.nansum(np.ones(edisk_image.shape)[mask])
 
     edisk_image[mask_cb68] = np.nan
     model[model_mask] = np.nan
@@ -143,11 +143,18 @@ mask_cb68 = edisk_image < 5*sigma
 
 
 
+# a_list = [1e-2, 5e-2, 1e-1, 5e-1, 1e0, 1e1]
+# L_star_list = [1e-1, 5e-1, 1e0, 3e0, 5e0, 1e1]
+# Q_list = [0.1, 0.2, 0.3, 0.5, 1, 1.5]
+# mdot_list = [1e-8, 1e-7, 1e-6, 1e-5]
+# heat_list = ["radiation", "accretion"]
+
 a_list = [1e-2, 5e-2, 1e-1, 5e-1, 1e0, 1e1]
 L_star_list = [1e-1, 5e-1, 1e0, 3e0, 5e0, 1e1]
 Q_list = [0.1, 0.2, 0.3, 0.5, 1, 1.5]
 mdot_list = [1e-8, 1e-7, 1e-6, 1e-5]
 heat_list = ["radiation", "accretion"]
+
 
 
 chi_list_irr = []

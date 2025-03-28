@@ -90,34 +90,58 @@ def read_from_dir(dir):
     os.chdir('..')
     return d, grid
 
-def plot_profile(d, grid):
+def plot_profile(d, grid, d2=None):
     nch3oh    = d.ndens_mol[:, :, 0, 0]
     dust      = np.sum(d.rhodust[:, :, 0, :], axis=2)
     t         = np.mean(d.dusttemp[:, :, 0, :], axis=2)
+    if d2 is not None:
+        nch3oh2    = d2.ndens_mol[:, :, 0, 0]
+        dust2      = np.sum(d2.rhodust[:, :, 0, :], axis=2)
+        t2         = np.mean(d2.dusttemp[:, :, 0, :], axis=2)
     R, Theta, Phi =  grid.x/au, grid.y, grid.z
     fig, ax = plt.subplots(nrows=1, ncols=3, figsize=(18, 6),
                         subplot_kw={'projection': 'polar'})
-    fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.1, wspace=0.3, hspace=0.05)
+    fig.subplots_adjust(left=0.05, right=0.95, top=0.9, bottom=0.1, wspace=0.1, hspace=0.05)
     cmaps = ['BuPu', 'OrRd', 'BuPu']
     titles = [r'$\rho_{dust}$', r'$T$', r'$n_{\mathregular{CH_3OH}}$']
     cbar = [r'log($\rho$) [g$cm^{-3}$]', r'log(T) [K]',r'log($n_{\mathregular{CH_3OH}}$) [$cm^{-3}$]']
 
-    for idx_val, val in enumerate([dust, t, nch3oh]):
-        c = ax[idx_val].pcolormesh(Theta-np.pi/2, R, np.log10(val), shading='auto', cmap=cmaps[idx_val])
-        ax[idx_val].pcolormesh(Theta+np.pi/2, R, np.log10(val), shading='auto', cmap=cmaps[idx_val])
-        if idx_val == 0:
-            den = val
-            # levels = np.linspace(np.log10(den).min(), np.log10(den).max(), 3)
-            levels = [-20, -17, -14]
-        ax[idx_val].contour(Theta-np.pi/2, R, np.log10(den), levels=levels, colors='k', linewidths=.7, linestyles='dashed')
-        ax[idx_val].contour(Theta+np.pi/2, R, np.log10(den), levels=levels, colors='k', linewidths=.7, linestyles='dashed')
-        ax[idx_val].set_xticks([])
-        ax[idx_val].set_yticks([])
-        fig.colorbar(c, ax=ax[idx_val], orientation='vertical', shrink=0.7).set_label(cbar[idx_val], fontsize=18)
-        ax[idx_val].set_title(titles[idx_val], fontsize=26, color='k')
+    if d2 is None:
+        for idx_val, val in enumerate([dust, t, nch3oh]):
+            c = ax[idx_val].pcolormesh(Theta-np.pi/2, R, np.log10(val), shading='auto', cmap=cmaps[idx_val])
+            ax[idx_val].pcolormesh(Theta+np.pi/2, R, np.log10(val), shading='auto', cmap=cmaps[idx_val])
+            if idx_val == 0:
+                den = val
+                # levels = np.linspace(np.log10(den).min(), np.log10(den).max(), 3)
+                levels = [-20, -15, -10]
+            # ax[idx_val].contour(Theta-np.pi/2, R, np.log10(den), levels=levels, colors='k', linewidths=.7, linestyles='dashed')
+            # ax[idx_val].contour(Theta+np.pi/2, R, np.log10(den), levels=levels, colors='k', linewidths=.7, linestyles='dashed')
+            ax[idx_val].set_xticks([])
+            ax[idx_val].set_yticks([])
+            fig.colorbar(c, ax=ax[idx_val], orientation='vertical', shrink=0.7).set_label(cbar[idx_val], fontsize=18)
+            ax[idx_val].set_title(titles[idx_val], fontsize=26, color='k')
+    else:
+        for idx_val, val in enumerate([(dust, dust2), (t, t2), (nch3oh, nch3oh2)]):
+            val1, val2 = val
+            # if idx_val == 1:
+            #     c = ax[idx_val].pcolormesh(Theta-np.pi/2, R, val1, shading='auto', cmap=cmaps[idx_val])
+            #     ax[idx_val].pcolormesh(Theta+np.pi/2, R, val2, shading='auto', cmap=cmaps[idx_val])
+            # else:
+            c = ax[idx_val].pcolormesh(Theta-np.pi/2, R, np.log10(val1), shading='auto', cmap=cmaps[idx_val])
+            ax[idx_val].pcolormesh(Theta+np.pi/2, R, np.log10(val2), shading='auto', cmap=cmaps[idx_val])
+            if idx_val == 0:
+                den = val1
+                # levels = np.linspace(np.log10(den).min(), np.log10(den).max(), 3)
+                levels = [-20, -15, -12]
+            # ax[idx_val].contour(Theta-np.pi/2, R, np.log10(den), levels=levels, colors='k', linewidths=.5, linestyles='dotted')
+            # ax[idx_val].contour(Theta+np.pi/2, R, np.log10(den), levels=levels, colors='k', linewidths=.5, linestyles='dotted')
+            ax[idx_val].set_xticks([])
+            ax[idx_val].set_yticks([])
+            fig.colorbar(c, ax=ax[idx_val], orientation='vertical', shrink=0.7).set_label(cbar[idx_val], fontsize=18)
+            ax[idx_val].set_title(titles[idx_val], fontsize=26, color='k')
 
 
-    scale_bar_ax = fig.add_axes([0.48, 0.12, 0.09, 0.02]) # [left, bottom, width, height]
+    scale_bar_ax = fig.add_axes([0.48, 0.10, 0.1, 0.02]) # [left, bottom, width, height]
     scale_bar = AnchoredSizeBar(scale_bar_ax.transData,
                                 1,  # Size of the scale bar in data coordinates
                                 f'{round(R[-1])} AU',  # Label for the scale bar
@@ -131,7 +155,7 @@ def plot_profile(d, grid):
     scale_bar_ax.add_artist(scale_bar)
     scale_bar_ax.set_axis_off()
 
-    scale_bar_ax = fig.add_axes([0.15, 0.12, 0.09, 0.02]) # [left, bottom, width, height]
+    scale_bar_ax = fig.add_axes([0.17, 0.10, 0.1, 0.02]) # [left, bottom, width, height]
     scale_bar = AnchoredSizeBar(scale_bar_ax.transData,
                                 1,  # Size of the scale bar in data coordinates
                                 f'{round(R[-1])} AU',  # Label for the scale bar
@@ -145,7 +169,7 @@ def plot_profile(d, grid):
     scale_bar_ax.add_artist(scale_bar)
     scale_bar_ax.set_axis_off()
 
-    scale_bar_ax = fig.add_axes([0.8, 0.12, 0.09, 0.02]) # [left, bottom, width, height]
+    scale_bar_ax = fig.add_axes([0.78, 0.10, 0.1, 0.02]) # [left, bottom, width, height]
     scale_bar = AnchoredSizeBar(scale_bar_ax.transData,
                                 1,  # Size of the scale bar in data coordinates
                                 f'{round(R[-1])} AU',  # Label for the scale bar
@@ -174,31 +198,42 @@ def gaussian_fit(i_r, r_axis, extract_index=None):
     return popt
 
 
-
-
-# a_list = [1e-2, 5e-2, 1e-1, 5e-1, 1e0, 1e1]
-# a_list = [1e-1, 1e0, 1e1]
-# L_star_list = [1e-1, 5e-1, 1e0, 3e0, 5e0, 1e1]
-# Q_list = [0.5, 1, 1.5]
-# mdot_list = [1e-8, 1e-7, 1e-6, 1e-5]
-# mdot_list = [1e-8, 1e-7, 1e-6]
-# heat_list = ["radiation", "accretion"]
-# heat_list = ["radiation"]
-
-
-
 a = 0.1
 L_star = 3
 Q = 1.5
 mdot = 1e-6
 heat = "radiation"
 
-model_im = image.readImage(fname=f'./simulation/outfile/conti_a_{a}_Lstar_{L_star}_Q_{Q}_mdot_{mdot}_{heat}_scat.out')
-plot_image(model_im, beam_axis, posang=45, a=a, L_star=L_star, Q=Q, mdot=mdot, heat=heat)
-i_r_model = get_radial_profile(model_im, beam_axis, posang=45, center=None, width=10)
-plot_i_r(i_r_model, a, L_star, Q, mdot, heat=heat)
-                    
 
+# disk_acc = generate_disk(
+#     amax   = 0.05,
+#     mstar  = 0.14,
+#     mdot   = 1e-7,
+#     rd     = 25,
+#     Q      = 0.5,
+#     l_star = 5.0,
+#     r_star = 1,
+#     heat   = "accretion",
+#     dir="./disk_acc/"
+# )
 
+# disk_irr = generate_disk(
+#     amax   = 0.05,
+#     mstar  = 0.14,
+#     mdot   = 1e-7,
+#     rd     = 25,
+#     Q      = 0.5,
+#     l_star = 5.0,
+#     r_star = 1,
+#     heat   = "irradiation",
+#     dir="./disk_irr/"
+# )
+
+d_acc, grid = read_from_dir("./disk_acc/")
+d_irr, _    = read_from_dir("./disk_irr/")
+plot_profile(d_acc, grid, d_irr)
+
+# plt.grid(False)
+plt.savefig("disk_profile.pdf", transparent=True, bbox_inches='tight', dpi=100)
 
 

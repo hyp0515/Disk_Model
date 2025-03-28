@@ -38,8 +38,8 @@ def generate_model(amax=0.1, l_star=0.89, Q=1, mdot = 1e-7, heat="accretion"):
                             comment=None,
                             incl_dust=1,
                             incl_lines=1,
-                            nphot=1000000,
-                            nphot_scat=10000000,
+                            nphot=5000000,
+                            nphot_scat=100000000,
                             scattering_mode_max=2,
                             istar_sphere=1,
                             num_cpu=None,
@@ -59,7 +59,7 @@ def generate_model(amax=0.1, l_star=0.89, Q=1, mdot = 1e-7, heat="accretion"):
                             Radius_of_disk=25,
                             NR=200,
                             NTheta=200,
-                            NPhi=10,
+                            NPhi=20,
                             Q=Q)
     model.get_vfieldcontrol(Kep=True,
                             vinfall=0.5,
@@ -85,7 +85,7 @@ def generate_model(amax=0.1, l_star=0.89, Q=1, mdot = 1e-7, heat="accretion"):
 
 
     simulate_mutual_parms = {
-        "incl"      : 70,
+        "incl"      : 73,
         "line"      : 240,
         "npix"      : 500,
         "sizeau"    : 80,
