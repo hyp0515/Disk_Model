@@ -64,13 +64,14 @@ def plot_residual(model):
     model_mask = model < 5*sigma
     mask = mask_cb68 | model_mask
     
-    chi_sq = np.nansum((model[mask] - edisk_image[mask])**2)/np.nansum(np.ones(edisk_image.shape)[mask])
+
+    
 
     edisk_image[mask_cb68] = np.nan
     model[model_mask] = np.nan
     residual[mask] = np.nan
     
-    
+    chi_sq = np.nansum((residual)**2)
 
     fig, ax = plt.subplots(1,3, sharex=False, sharey=True, figsize=(15,5))
     fig.subplots_adjust(left=0.05, right=0.97, top=0.9, bottom=0.1, wspace=0.0, hspace=0.0)
