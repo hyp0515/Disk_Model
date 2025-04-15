@@ -81,7 +81,7 @@ class generate_simulation:
         
         npix        = getattr(cube_parms,        'npix',   100)
         sizeau      = getattr(cube_parms,      'sizeau',   100)
-        incl        = getattr(cube_parms,        'incl',    70)
+        incl        = getattr(cube_parms,        'incl',    73)
         line        = getattr(cube_parms,        'line',   240)
         v_width     = getattr(cube_parms,     'v_width',    10)
         nlam        = getattr(cube_parms,        'nlam',    10)
