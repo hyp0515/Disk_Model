@@ -20,7 +20,7 @@ class DiskModel_spherical:
             Mdot      : rate of mass infall from the envelope onto the disk
             Rd        : radius of the disk
             Q         : Toomre index
-            N_R       : resolution of radius grid
+            N_R       : resolution of radius grid (Default = 500)
         """
         self.Mstar = Mstar
         self.Mdot  = Mdot
@@ -35,8 +35,9 @@ class DiskModel_spherical:
         self.tau_r_mid = self.DM_horizontal.tau_r_mid
         self.tau_p_mid = self.DM_horizontal.tau_p_mid
         
-        Z_max = self.Rd // 2  # reduce unimportant high z region
-        Z_grid = np.append(np.logspace(np.log10(Z_max/au), np.log10(0.001), self.NR-1), 0)
+        Z_max = self.Rd
+        self.NZ = self.NR
+        Z_grid = np.append(np.logspace(np.log10(Z_max/au), np.log10(0.001), self.NZ-1), 0)
         self.Z_grid = Z_grid[::-1]
         self.NZ = len(self.Z_grid)
         
@@ -45,21 +46,19 @@ class DiskModel_spherical:
              
     def make_position_map(self):
         """
-        Make vertical grid
+        Make grid of position in cylindrical coordinates
         """
-        self.NZ = self.NR
-        Z_max = self.Rd
-        Z_grid = np.append(np.logspace(np.log10(Z_max/au), np.log10(0.001), self.NZ-1), 0)
-        self.Z_grid = Z_grid[::-1]
         R, Z = np.meshgrid(self.R_grid, self.Z_grid, indexing = 'ij')
         pos_map = np.dstack((R, Z))
         self.pos_map = pos_map
         self.precompute_property()
 
     
-    def precompute_property(self, miu=2.3, factor=1):
+    def precompute_property(self, miu=2.3, ionized_factor=1):
         """
         To calculate the gas pressure scale height
+        miu   : mean molecular weight (Default = 2.3)
+        ionized_factor: N/(N-n_e) (ionized factor; Default = 1)
         """
         def cg(miu, factor,  T):  # (5.4) sound speed assiciated with the gas pressure
             """
@@ -76,7 +75,7 @@ class DiskModel_spherical:
             H_g = (2*cg**2/effective_gravity)**0.5
             return H_g/au        
         
-        sound_speed       = cg(miu, factor, self.T_eff)
+        sound_speed       = cg(miu, ionized_factor, self.T_eff)
         effective_gravity = G*self.Mstar*(self.R_grid*au)**(-3)  # (2.2) effective vertical gravity
         self.H_g          = H_g(sound_speed, effective_gravity)
         self.make_rho_and_m_map()
@@ -197,7 +196,15 @@ class DiskModel_spherical:
                          T_map)
         self.T_map = np.maximum(T_map, 20)
 
-    def extend_to_spherical(self, NTheta, NPhi):
+    def extend_to_spherical(self, NTheta, NPhi, theta_min_deg=30):
+
+        """
+        Extend the disk model to spherical coordinates
+        Args:
+        NTheta          : number of theta grid
+        NPhi            : number of phi grid
+        theta_min_deg   : the minimum angle of theta grid (Default = 30 degree)
+        """
         self.NTheta = NTheta
         self.NPhi = NPhi  
 
@@ -209,7 +216,8 @@ class DiskModel_spherical:
         self.r_sph = r_grid
 
         theta_map = np.arccos(pos_map[:, :, 1]/r_map)
-        theta_min = np.deg2rad(40) # the starting angle of theta
+        theta_min = np.max(np.deg2rad(theta_min_deg), 
+                           np.pi/2-3*np.arctan(self.H[:-1]/self.R_grid[:-1])) # the starting angle of theta
         theta_grid = np.logspace(np.log10(theta_min), np.log10(np.max(theta_map)), NTheta)
         theta_grid = -1*theta_grid + 0.5*np.pi + theta_min
         theta_grid = theta_grid[::-1]       
