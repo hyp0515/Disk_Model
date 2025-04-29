@@ -357,6 +357,7 @@ def compute_grain_properties_DSHARP(
 def generate_opacity_table_opt(
     a_min, a_max, q, dust_to_gas,
     T_min=20, T_max=2000, N_T=100,
+    save_table=True
     ):
     """
     Generate an opacity table for given grain size distribution. (using dsharp compsition)
@@ -405,7 +406,8 @@ def generate_opacity_table_opt(
         kappa_p.append(p.kplanck[0,:]*dust_to_gas*np.sum(fraction[idx:]))
         kappa_r.append(p.kross[0,:]*dust_to_gas*np.sum(fraction[idx:]))
         g.append(p.gsca[0,:]*dust_to_gas*np.sum(fraction[idx:]))
-        os.system(f'cp -r ./opacity_table/dustkappa.inp ./dustkappa_{fname[idx]}.inp')
+        if save_table:
+            os.system(f'cp -r ./opacity_table/dustkappa.inp ./dustkappa_{fname[idx]}.inp')
     os.system('rm -r ./opacity_table')
     # try:
     #     os.system('rm -r ./opacity_table')

@@ -11,5 +11,3 @@ In [radmc/](radmc), there are pipelines to transform X22_model to files which RA
 ## example
 In [example](example), there are several examples to demonstrate how to process these scripts
 
-## CB68
-In [CB68](CB68), there are python scripts that extracted neccessary data from CB68's fits files. The data are from two ALMA Large Program ([FAUST](https://doi.org/10.3847/1538-4357/ac77e7) and [eDisk](https://doi.org/10.3847/1538-4357/acdd7a))

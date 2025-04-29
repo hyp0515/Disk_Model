@@ -389,7 +389,7 @@ class radmc3d_setup:
       self.DM = DM
       
       self.NR    = DM.NR
-      self.NTheta = 2*DM.NTheta-1
+      self.NTheta = DM.NTheta
       self.NPhi  = DM.NPhi
       
 

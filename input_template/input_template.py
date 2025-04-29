@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-sys.path.insert(0,'../../')
 from radmc.setup import radmc3d_setup
 from radmc.simulate import generate_simulation
 from radmc.plot import generate_plot
@@ -75,12 +74,7 @@ model.get_gasdensitycontrol(abundance=1e-10, # abundance of CH3OH compared to H2
 
 ##############################################
 
-condition_parms = general_parameters(
-    nodust      = False,
-    scat        = True,
-    extract_gas = True,
-)
-
+simulation = generate_simulation(save_out=True, save_npz=True)
 
 simulate_mutual_parms = {
     "incl"      : 73,
@@ -94,73 +88,34 @@ simulate_mutual_parms = {
     "fname"     : 'test',
 }
 
-channel_cube_parms = general_parameters(
-    **simulate_mutual_parms,
+simulation.generate_cube(
+    nodust=False, scat=True, extract_gas=True,
     nlam=11,
+    **simulate_mutual_parms
 )
 
-pv_cube_parms = general_parameters(
-    **simulate_mutual_parms,
+simulation.generate_cube(
+    nodust=False, scat=True, extract_gas=True,
     nlam=50,
+    **simulate_mutual_parms
 )
 
-sed_parms = general_parameters(
-    **simulate_mutual_parms, 
+simulation.generate_continuum(
+   scat=True,
+   wav=1300,
+   **simulate_mutual_parms
+)
+
+simulation.generate_sed(
     scat=True,
     freq_min=5e1, freq_max=5e2, nlam=10,
+    **simulate_mutual_parms
 )
 
-spectrum_parms = general_parameters(
-    **simulate_mutual_parms,
-    nlam=10
-)
-conti_parms = general_parameters(
-    **simulate_mutual_parms,
-    wav=1300,
-    scat=True,
+simulation.generate_line_spectrum(
+    nodust=False, scat=True, extract_gas=True,
+    nlam=10,
+    **simulate_mutual_parms
 )
 
-simulation_parms = general_parameters(
-    condition_parms    = condition_parms,
-    channel_cube_parms = channel_cube_parms,
-    pv_cube_parms      = pv_cube_parms,
-    conti_parms        = conti_parms,
-    sed_parms          = sed_parms,
-    spectrum_parms     = spectrum_parms,
-    save_out=True,
-    save_npz=True,
-)
-
-simulation = generate_simulation(
-    parms=simulation_parms,
-    channel       = False,
-    pv            = False,
-    conti         = True,
-    sed           = False,
-    line_spectrum = False
-)
-
-
-##############################################
-
-# class plot_radmc:
-#     def __init__(self, **kwargs):
-#         for k, v in kwargs.items():
-#           # add parameters as attributes of this object
-#           setattr(self, k, v)
-
-#     def __del__(self):
-#       pass
-
-#     def add_attributes(self, **kwargs):
-#       '''
-#       Use this function to set the values of the attributs n1, n2, n3,
-#       which are number of pixels in the first, second, and third axes. 
-#       '''
-#       for k, v in kwargs.items():
-#         # add parameters as attributes of this object
-#         setattr(self, k, v)
-    
-#     def read_img(self, fname=None,):
-#       return
        
