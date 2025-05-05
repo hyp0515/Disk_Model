@@ -1,6 +1,6 @@
 import numpy as np
 from X22_model.disk_model import *
-from scipy.interpolate import interp2d
+from scipy.interpolate import RegularGridInterpolator
 from scipy.optimize import minimize_scalar
 # All unit are in cgs except height and radius are in au
 #########################################################################################
@@ -235,13 +235,21 @@ class DiskModel_spherical:
         i                : index of r_sph
         j                : index of theta_sph
         '''
+        # def interpolate(data_map):  
+        #     interpolator = interp2d(self.Z_grid, self.R_grid, data_map, kind='linear')
+        #     interpolated_data = np.empty((self.NR, self.NTheta//2))
+        #     for r in range(self.NR):
+        #         for theta in range(self.NTheta//2): 
+        #             interpolated_data[r, theta] = interpolator(z_sph_in_cyl[r, theta], r_sph_in_cyl[r, theta])            
+        #     return interpolated_data
         def interpolate(data_map):  
-            interpolator = interp2d(self.Z_grid, self.R_grid, data_map, kind='linear')
+            interpolator = RegularGridInterpolator((self.Z_grid, self.R_grid), data_map.T, bounds_error=False, fill_value=None)
             interpolated_data = np.empty((self.NR, self.NTheta//2))
             for r in range(self.NR):
-                for theta in range(self.NTheta//2): 
-                    interpolated_data[r, theta] = interpolator(z_sph_in_cyl[r, theta], r_sph_in_cyl[r, theta])            
-            return interpolated_data    
+                for theta in range(self.NTheta//2):
+                    point = [z_sph_in_cyl[r, theta], r_sph_in_cyl[r, theta]]
+                    interpolated_data[r, theta] = interpolator(point)          
+            return interpolated_data     
         def mirror_with_r_plane(map):
             map_mirror = np.fliplr(map)            
             return np.concatenate((map, map_mirror), axis= 1)        

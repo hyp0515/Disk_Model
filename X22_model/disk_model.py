@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 import warnings
-import optool
+from . import optool
 import os
 
 """
@@ -41,16 +41,28 @@ class interp1d_log:
     def __call__(self, x):
         return np.exp(self.f_log(np.log(x)))
 # for 2d interp, need z.shape = (len(y), len(x))
+# class interp2d_semi_log_scalar:
+#     def __init__(self, x, y, z):
+#         self.f_log = scipy.interpolate.interp2d(x,np.log(y),np.log(z))
+#     def __call__(self, x, y):
+#         return  np.exp(self.f_log(x,np.log(y))[0])
+# class interp2d_log_vectorized:
+#     def __init__(self, x, y, z):
+#         self.f_log = np.vectorize(scipy.interpolate.interp2d(np.log(x),np.log(y),np.log(z)))
+#     def __call__(self, x, y):
+#         return  np.exp(self.f_log(np.log(x),np.log(y)))
 class interp2d_semi_log_scalar:
     def __init__(self, x, y, z):
-        self.f_log = scipy.interpolate.interp2d(x,np.log(y),np.log(z))
+        self.f_log = scipy.interpolate.RegularGridInterpolator((x,np.log(y)),np.log(z.T))
     def __call__(self, x, y):
-        return  np.exp(self.f_log(x,np.log(y))[0])
+        xx, yy = np.meshgrid(x, y)
+        return  np.exp(self.f_log((xx,np.log(yy)))[0])
 class interp2d_log_vectorized:
     def __init__(self, x, y, z):
-        self.f_log = np.vectorize(scipy.interpolate.interp2d(np.log(x),np.log(y),np.log(z)))
+        self.f_log = np.vectorize(scipy.interpolate.RegularGridInterpolator((np.log(x),np.log(y)),np.log(z.T)))
     def __call__(self, x, y):
-        return  np.exp(self.f_log(np.log(x),np.log(y)))
+        xx, yy = np.meshgrid(x, y)
+        return  np.exp(self.f_log((np.log(xx),np.log(yy))))
 # planck function
 def B(T,nu):
     return 2*h*nu**3/c_light**2 * 1/(np.exp(h*nu/(kB*T))-1)
@@ -161,7 +173,7 @@ def generate_opacity_table_x22(
             grain_properties = pickle.load(f)
     except FileNotFoundError:
         try:
-            with open('../../'+precomputed_grain_properties_fname, "rb") as f:
+            with open('./X22_model/'+precomputed_grain_properties_fname, "rb") as f:
                 grain_properties = pickle.load(f)
         except FileNotFoundError:
             compute_grain_properties_DSHARP(fname='./'+precomputed_grain_properties_fname)
