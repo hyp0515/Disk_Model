@@ -15,12 +15,18 @@ class DiskModel_spherical:
         """
         Run Wenrui's radial profile to get initial r-dependent profiles.
 
-        Args:
-            Mstar     : mass of protostar
-            Mdot      : rate of mass infall from the envelope onto the disk
-            Rd        : radius of the disk
-            Q         : Toomre index
-            N_R       : resolution of radius grid (Default = 500)
+        Parameters
+        -----------------
+        Mstar     : float
+            Mass of protostar
+        Mdot      : float
+            Rate of mass infall from the envelope onto the disk
+        Rd        : float
+            Radius of the disk
+        Q         : float
+            Toomre index
+        N_R       : float
+            Resolution of radius grid (Default = 500)
         """
         self.Mstar = Mstar
         self.Mdot  = Mdot
@@ -200,10 +206,16 @@ class DiskModel_spherical:
 
         """
         Extend the disk model to spherical coordinates
-        Args:
-        NTheta          : number of theta grid
-        NPhi            : number of phi grid
-        theta_min_deg   : the minimum angle of theta grid (Default = 30 degree)
+
+        Parameters
+        ------------------
+        NTheta          : float
+            The number of theta grid
+        NPhi            : float
+            The number of phi grid
+        theta_min_deg   : float
+            The minimum angle of theta grid (Default = 30 degree)
+
         """
         self.NTheta = NTheta # since theta is symmetric, we only need half of the grid
         self.NPhi = NPhi  

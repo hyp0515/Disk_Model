@@ -1,0 +1,37 @@
+X22 Model
+***************************
+
+
+Model Assumptions
+==========================
+
+
+
+Modules
+==========================
+
+
+
+.. autofunction:: disk_model.generate_opacity_table_x22
+
+.. autofunction:: disk_model.generate_opacity_table_opt
+
+.. autofunction:: disk_model.generate_disk_property_table
+
+
+.. autoclass:: disk_model.DiskModel
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. autoclass:: disk_model.DiskImage
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
+.. autoclass:: disk_model.DiskFitting
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -145,27 +145,39 @@ def generate_opacity_table_x22(
     """
     Generate an opacity table for given grain size distribution.
 
-    Args:
-      a_min, a_max: min/max grain size in grain size distribution
-      q: slope for grain size distribution
-      dust_to_gas: dust-to-gas mass ratio (before sublimation)
-      precomputed_grain_properties_fname:
-        name of the pkl file storing pre-computed grain material properties
-      T_min, T_max: min/max temprature for temprature grid
-      N_T: temperature grid resolution
+    Parameters
+    ------------------------------
+    a_min, a_max : float
+        Min/Max grain size in grain size distribution
+    q : float
+        Slope for grain size distribution
+    dust_to_gas : float
+        dust-to-gas mass ratio (before sublimation)
+    precomputed_grain_properties_fname : str
+        Name of the pkl file storing pre-computed grain material properties
+    T_min, T_max : float
+        Min/Max temprature for temprature grid
+    N_T : int
+        Temperature grid resolution
 
-    Returns:
-      a dictionary containing the following items:
-        T_crit: sublimation temperatures
-        T: temperature grid
-        lam: wavelength grid
-        kappa: absorption opacity at given lam
-               2d array, first dimension corresponds to temperature range
-        kappa_p: Planck mean opacity
-        kappa_r: Rosseland mean opacity
-        kappa_s, kappa_s_p, kappa_s_r:
-          same as kappa, kappa_p, kappa_r, but for effective scattering opacity
-          (1-g)*kappa_scatter
+    Returns  
+    -------------------------------
+    T_crit : numpy array
+        Sublimation temperatures
+    T : numpy array
+        Temperature grid
+    lam : numpy array
+        Wavelength grid
+    kappa : numpy array
+        absorption opacity at given lam
+        2D array, first dimension corresponds to temperature range
+    kappa_p : numpy array
+        Planck mean opacity
+    kappa_r : numpy array
+        Rosseland mean opacity
+    kappa_s, kappa_s_p, kappa_s_r : numpy array
+        same as kappa, kappa_p, kappa_r, but for effective scattering opacity
+        (1-g)*kappa_scatter
     """
     # compute_grain_properties_DSHARP()
     try:
@@ -372,29 +384,42 @@ def generate_opacity_table_opt(
     save_table=True
     ):
     """
-    Generate an opacity table for given grain size distribution. (using dsharp compsition)
+    Generate an opacity table for given grain size distribution.
 
-    Args:
-      a_min, a_max: min/max grain size in grain size distribution (in cm)
-      q: slope for grain size distribution
-      dust_to_gas: dust-to-gas mass ratio (before sublimation)
-      precomputed_grain_properties_fname:
-        name of the pkl file storing pre-computed grain material properties
-      T_min, T_max: min/max temprature for temprature grid
-      N_T: temperature grid resolution
+    Parameters
+    ------------------------------
+    a_min, a_max : float
+        Min/Max grain size in grain size distribution
+    q : float
+        Slope for grain size distribution
+    dust_to_gas : float
+        dust-to-gas mass ratio (before sublimation)
+    T_min, T_max : float
+        Min/Max temprature for temprature grid
+    N_T : int
+        Temperature grid resolution
 
-    Returns:
-      a dictionary containing the following items:
-        T_crit: sublimation temperatures
-        T: temperature grid
-        lam: wavelength grid
-        kappa: absorption opacity at given lam
-               2d array, first dimension corresponds to temperature range
-        kappa_p: Planck mean opacity
-        kappa_r: Rosseland mean opacity
-        kappa_s, kappa_s_p, kappa_s_r:
-          same as kappa, kappa_p, kappa_r, but for effective scattering opacity
-          (1-g)*kappa_scatter
+    Returns  
+    -------------------------------
+    dict
+        A dictionary with the following keys:
+
+        - T_crit : numpy array
+            Sublimation temperatures
+        - T : numpy array
+            Temperature grid
+        - lam : numpy array
+            Wavelength grid
+        - kappa : numpy array
+            absorption opacity at given lam
+            2D array, first dimension corresponds to temperature range
+        - kappa_p : numpy array
+            Planck mean opacity
+        - kappa_r : numpy array
+            Rosseland mean opacity
+        - kappa_s, kappa_s_p, kappa_s_r : numpy array
+            same as kappa, kappa_p, kappa_r, but for effective scattering opacity
+            (1-g)*kappa_scatter
     """
     
     T_crit = [150, 425, 680, 1200]
@@ -467,20 +492,31 @@ def generate_disk_property_table(
     Generate a table that maps T_eff and Sigma/cs to other local disk
     properties.
 
-    Args:
-      opacity_table: opacity table from generate_opacity_table()
-      N_T_eff, N_Sigma_cs: resolution of the grid
-      T_eff_min: minimum T_eff (max T_eff is determined automatically)
+    Parameters
+    ------------------------------
+    opacity_table : dict
+        Opacity table from generate_opacity_table()
+    N_T_eff, N_Sigma_cs : int
+        Resolution of the grid
+    T_eff_min : float
+        Minimum T_eff (max T_eff is determined automatically)
 
-    Returns:
-      a dictionary containing:
-        T_eff_grid
-        Sigma_cs_l, Sigma_cs_r: min/max Sigma/cs allowed at given T_eff
-        x: normalized log(Sigma/cs) grid.
-           we map x=[0,1] to the full range of allowed log(Sigma/cs) 
-           uniformly.
-        Sigma, cs, tau_p_mid, tau_r_mid, T_mid: local disk properties
-           for given (T,x)
+    Returns
+    -------------------------------
+    dict
+        A dictionary with the following keys:
+
+        - T_eff_grid : numpy array
+            Effective temperature grid
+        - Sigma_cs_l, Sigma_cs_r : numpy array
+            Min/Max Sigma/cs allowed at given T_eff
+        - x : numpy array
+            Normalized log(Sigma/cs) grid.
+            We map x=[0,1] to the full range of allowed log(Sigma/cs) 
+            uniformly.
+        - Sigma, cs, tau_p_mid, tau_r_mid, T_mid : numpy array
+            local disk properties
+            for given (T,x)
     """
     T_crit = opacity_table['T_crit']
     T_subl = T_crit[-1] # above this temperature kappa -> 0
@@ -780,19 +816,36 @@ class DiskModel:
     Parametrized disk model for generating radial porfiles of disk
     properties and flux density at given wavelengths.
 
-    Attributes:
-      (all in cgs)
-      M: total mass
-      Mstar: stellar mass
-      Mdot: accretion rate
-      Rd: disk size
-      Q: Toomre Q
-      
-      R: radius grid (R[0]=0)
-      Sigma, T_mid, tau_p_mid, tau_r_mid: radial profile at R[1:]
-      MR: M(<R) profile at R[1:]
+    Attributes
+    ------------------------------
+    M       : float
+        Total mass (g)
+    Mstar   : float
+        Stellar mass (g)
+    Mdot    : float
+        Accretion rate (g/s)
+    Rd      : float
+        Disk size (cm)
+    Q       : float
+        Toomre Q
+    R       : numpy array
+        Radius grid (R[0]=0) (cm)
+    Sigma, T_mid, tau_p_mid, tau_r_mid  : numpy array
+        Radial profile at R[1:]
+    MR      : numpy array
+        M(<R) profile at R[1:] (cm)
     """
     def __init__(self, opacity_table, disk_property_table):
+        """
+        Initialize disk model with opacity and disk property tables.
+
+        Parameters
+        ------------------------------
+        opacity_table : dict
+            Opacity table from generate_opacity_table()
+        disk_property_table : dict
+            Disk property table from generate_disk_property_table()
+        """
         self.M = 1*Msun
         self.Mstar = 0.5*Msun
         self.Mdot = 1e-5*Msun/yr
@@ -865,9 +918,18 @@ class DiskModel:
         """
         Generate radial disk profile (Sigma, T_mid, tau_p_mid, tau_r_mid)
 
-        Args:
-          Mstar, Mdot, Rd, Q: set to None to use current values
-                              stored in self
+        Parameters
+        ------------------------------
+        Mstar   :   float
+            Stellar mass (g)
+        Mdot    :   float
+            Accretion rate (g/s)
+        Rd      :   float
+            Disk size (cm)
+        Q       :   float
+            Toomre Q
+        N_R     :   int
+            Number of R grid points
         """
         # update parameters
         if Mstar is not None: self.Mstar = Mstar

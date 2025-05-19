@@ -31,17 +31,37 @@ class generate_simulation:
                       scat      = True,
                       extract_gas=True,
                       **kwargs):
-                    
+
         """
-        incl               : Inclination angle of the disk
-        line               : Transistion level (see 'molecule_ch3oh.inp')
-        v_width            : Range of velocity to simulate
-        nlam               : Number of velocities
-        npix               : Number of map's pixels
-        nodust             : If False, dust effect is included
-        scat               : If True and nodust=False, scattering is included. (Time-consuming)
-        extracted_gas      : If True, spectral line is extracted (I_{dust+gas}-I_{dust})
-        sizeau             : Map's span
+        This function will generate a cube of spectral line.
+
+        Parameters
+        -----------------
+        dir                : str
+            Directory to save the output
+        fname              : str
+            File name to save the output
+        npix               : int
+            Number of map's pixels
+        sizeau             : float
+            Map's span
+        incl               : float
+            Inclination angle of the disk
+        line               : int
+            Transistion level (see 'molecule_ch3oh.inp')
+        v_width            : float
+            Range of velocity to simulate
+        vkms               : float
+            Velocity of the line center
+        nlam               : int
+            Number of velocities
+        nodust             : bool
+            If False, dust effect is included
+        scat               : bool
+            If True and nodust=False, scattering is included. (Time-consuming)
+        extracted_gas      : bool
+            If True, spectral line is extracted (I_{dust+gas}-I_{dust})
+        
         """
         
         prompt = f'npix {npix} sizeau {sizeau} incl {incl} posang {-posang} iline {line} vkms {vkms} widthkms {v_width} linenlam {nlam}'
@@ -118,7 +138,29 @@ class generate_simulation:
                            posang   = 45,
                            scat     = True, 
                            **kwargs):
-        
+        """
+        This function will generate a continuum image.
+
+        Parameters
+        -----------------
+        dir                : str
+            Directory to save the output
+        fname              : str
+            File name to save the output
+        incl               : float
+            Inclination angle of the disk
+        wav                : float
+            Wavelength to simulate
+        npix               : int
+            Number of map's pixels
+        sizeau             : float
+            Map's span
+        posang             : float
+            Position angle of the disk
+        scat               : bool
+            If True, scattering is included. (Time-consuming)
+        """
+
         type_note = 'conti'
 
         prompt = f'radmc3d image npix {npix} sizeau {sizeau} incl {incl} lambda {wav} posang {-posang} noline'
@@ -148,6 +190,27 @@ class generate_simulation:
                      scat       = True,
                      **kwargs):
         
+        """
+        This function will generate a spectral energy distribution (SED).
+
+        Parameters
+        -----------------
+        dir                : str
+            Directory to save the output
+        fname              : str
+            File name to save the output
+        incl               : float
+            Inclination angle of the disk
+        freq_min           : float
+            Minimum frequency to simulate
+        freq_max           : float
+            Maximum frequency to simulate
+        nlam               : int
+            Number of wavelengths
+        scat               : bool
+            If True, scattering is included. (Time-consuming)
+        """
+
         type_note = 'sed'
         
         wav_max  = ((cc*1e-2)/(freq_min*1e9))*1e+6
@@ -182,15 +245,30 @@ class generate_simulation:
                                extract_gas= True,
                                **kwargs):
         """
-        incl               : Inclination angle of the disk
-        line               : Transistion level (see 'molecule_ch3oh.inp')
-        v_width            : Range of velocity to simulate
-        nlam               : Number of velocities
-        npix               : Number of map's pixels
-        nodust             : If False, dust effect is included
-        scat               : If True and nodust=False, scattering is included. (Time-consuming)
-        extracted_gas      : If True, spectral line is extracted (I_{dust+gas}-I_{dust})
-        sizeau             : Map's span
+        This function will generate a line spectrum.
+
+        Parameters
+        -----------------
+        dir                : str
+            Directory to save the output
+        fname              : str
+            File name to save the output
+        incl               : float
+            Inclination angle of the disk
+        line               : int
+            Transistion level (see 'molecule_ch3oh.inp')
+        v_width            : float
+            Range of velocity to simulate
+        nlam               : int
+            Number of velocities
+        vkms               : float
+            Velocity of the line center
+        nodust             : bool
+            If False, dust effect is included
+        scat               : bool
+            If True and nodust=False, scattering is included. (Time-consuming)
+        extracted_gas      : bool
+            If True, spectral line is extracted (I_{dust+gas}-I_{dust})
         """
         
         type_note = 'spectrum'

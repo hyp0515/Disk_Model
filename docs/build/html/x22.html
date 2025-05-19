@@ -1,0 +1,663 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X22 Model &mdash; GIdisk2obs to RADMC3D 05-2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=9c599b8b"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Vertical Structure" href="vertical.html" />
+    <link rel="prev" title="Introduction" href="introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GIdisk2obs to RADMC3D
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">X22 Model</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#model-assumptions">Model Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#modules">Modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#disk_model.generate_opacity_table_x22"><code class="docutils literal notranslate"><span class="pre">generate_opacity_table_x22()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disk_model.generate_opacity_table_opt"><code class="docutils literal notranslate"><span class="pre">generate_opacity_table_opt()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disk_model.generate_disk_property_table"><code class="docutils literal notranslate"><span class="pre">generate_disk_property_table()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disk_model.DiskModel"><code class="docutils literal notranslate"><span class="pre">DiskModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.M"><code class="docutils literal notranslate"><span class="pre">DiskModel.M</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.Mstar"><code class="docutils literal notranslate"><span class="pre">DiskModel.Mstar</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.Mdot"><code class="docutils literal notranslate"><span class="pre">DiskModel.Mdot</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.Rd"><code class="docutils literal notranslate"><span class="pre">DiskModel.Rd</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.Q"><code class="docutils literal notranslate"><span class="pre">DiskModel.Q</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.R"><code class="docutils literal notranslate"><span class="pre">DiskModel.R</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.MR"><code class="docutils literal notranslate"><span class="pre">DiskModel.MR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.generate_disk_profile"><code class="docutils literal notranslate"><span class="pre">DiskModel.generate_disk_profile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.generate_observed_flux"><code class="docutils literal notranslate"><span class="pre">DiskModel.generate_observed_flux()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.generate_observed_flux_single_wavelength"><code class="docutils literal notranslate"><span class="pre">DiskModel.generate_observed_flux_single_wavelength()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.generate_observed_flux_single_wavelength_no_scattering"><code class="docutils literal notranslate"><span class="pre">DiskModel.generate_observed_flux_single_wavelength_no_scattering()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.load_disk_property_functions"><code class="docutils literal notranslate"><span class="pre">DiskModel.load_disk_property_functions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.load_opacity_functions"><code class="docutils literal notranslate"><span class="pre">DiskModel.load_opacity_functions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.set_lam_obs_list"><code class="docutils literal notranslate"><span class="pre">DiskModel.set_lam_obs_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskModel.solve_local_disk_properties"><code class="docutils literal notranslate"><span class="pre">DiskModel.solve_local_disk_properties()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#disk_model.DiskImage"><code class="docutils literal notranslate"><span class="pre">DiskImage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.img"><code class="docutils literal notranslate"><span class="pre">DiskImage.img</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.img_model"><code class="docutils literal notranslate"><span class="pre">DiskImage.img_model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.au_per_pix"><code class="docutils literal notranslate"><span class="pre">DiskImage.au_per_pix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.evaluate_disk_chi_sq"><code class="docutils literal notranslate"><span class="pre">DiskImage.evaluate_disk_chi_sq()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.evaluate_log_likelihood"><code class="docutils literal notranslate"><span class="pre">DiskImage.evaluate_log_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.evaluate_log_likelihood_old"><code class="docutils literal notranslate"><span class="pre">DiskImage.evaluate_log_likelihood_old()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.generate_mask"><code class="docutils literal notranslate"><span class="pre">DiskImage.generate_mask()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskImage.generate_mock_observation"><code class="docutils literal notranslate"><span class="pre">DiskImage.generate_mock_observation()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#disk_model.DiskFitting"><code class="docutils literal notranslate"><span class="pre">DiskFitting</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.source_name"><code class="docutils literal notranslate"><span class="pre">DiskFitting.source_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.disk_model"><code class="docutils literal notranslate"><span class="pre">DiskFitting.disk_model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.disk_image_list"><code class="docutils literal notranslate"><span class="pre">DiskFitting.disk_image_list</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.add_observation"><code class="docutils literal notranslate"><span class="pre">DiskFitting.add_observation()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.evaluate_log_likelihood"><code class="docutils literal notranslate"><span class="pre">DiskFitting.evaluate_log_likelihood()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.fit"><code class="docutils literal notranslate"><span class="pre">DiskFitting.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.mcmc_fit"><code class="docutils literal notranslate"><span class="pre">DiskFitting.mcmc_fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#disk_model.DiskFitting.set_cosI"><code class="docutils literal notranslate"><span class="pre">DiskFitting.set_cosI()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="vertical.html">Vertical Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="radmc3d.html">Pipelines to RADMC-3D</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GIdisk2obs to RADMC3D</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">X22 Model</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/x22.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="x22-model">
+<h1>X22 Model<a class="headerlink" href="#x22-model" title="Link to this heading"></a></h1>
+<section id="model-assumptions">
+<h2>Model Assumptions<a class="headerlink" href="#model-assumptions" title="Link to this heading"></a></h2>
+</section>
+<section id="modules">
+<h2>Modules<a class="headerlink" href="#modules" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="disk_model.generate_opacity_table_x22">
+<span class="sig-prename descclassname"><span class="pre">disk_model.</span></span><span class="sig-name descname"><span class="pre">generate_opacity_table_x22</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dust_to_gas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precomputed_grain_properties_fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'precomputed_grain_properties/grain_properties.pkl'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.generate_opacity_table_x22" title="Link to this definition"></a></dt>
+<dd><p>Generate an opacity table for given grain size distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a_min</strong> (<em>float</em>) – Min/Max grain size in grain size distribution</p></li>
+<li><p><strong>a_max</strong> (<em>float</em>) – Min/Max grain size in grain size distribution</p></li>
+<li><p><strong>q</strong> (<em>float</em>) – Slope for grain size distribution</p></li>
+<li><p><strong>dust_to_gas</strong> (<em>float</em>) – dust-to-gas mass ratio (before sublimation)</p></li>
+<li><p><strong>precomputed_grain_properties_fname</strong> (<em>str</em>) – Name of the pkl file storing pre-computed grain material properties</p></li>
+<li><p><strong>T_min</strong> (<em>float</em>) – Min/Max temprature for temprature grid</p></li>
+<li><p><strong>T_max</strong> (<em>float</em>) – Min/Max temprature for temprature grid</p></li>
+<li><p><strong>N_T</strong> (<em>int</em>) – Temperature grid resolution</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>T_crit</strong> (<em>numpy array</em>) – Sublimation temperatures</p></li>
+<li><p><strong>T</strong> (<em>numpy array</em>) – Temperature grid</p></li>
+<li><p><strong>lam</strong> (<em>numpy array</em>) – Wavelength grid</p></li>
+<li><p><strong>kappa</strong> (<em>numpy array</em>) – absorption opacity at given lam
+2D array, first dimension corresponds to temperature range</p></li>
+<li><p><strong>kappa_p</strong> (<em>numpy array</em>) – Planck mean opacity</p></li>
+<li><p><strong>kappa_r</strong> (<em>numpy array</em>) – Rosseland mean opacity</p></li>
+<li><p><strong>kappa_s, kappa_s_p, kappa_s_r</strong> (<em>numpy array</em>) – same as kappa, kappa_p, kappa_r, but for effective scattering opacity
+(1-g)*kappa_scatter</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="disk_model.generate_opacity_table_opt">
+<span class="sig-prename descclassname"><span class="pre">disk_model.</span></span><span class="sig-name descname"><span class="pre">generate_opacity_table_opt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a_min</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_max</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dust_to_gas</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_T</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_table</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.generate_opacity_table_opt" title="Link to this definition"></a></dt>
+<dd><p>Generate an opacity table for given grain size distribution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a_min</strong> (<em>float</em>) – Min/Max grain size in grain size distribution</p></li>
+<li><p><strong>a_max</strong> (<em>float</em>) – Min/Max grain size in grain size distribution</p></li>
+<li><p><strong>q</strong> (<em>float</em>) – Slope for grain size distribution</p></li>
+<li><p><strong>dust_to_gas</strong> (<em>float</em>) – dust-to-gas mass ratio (before sublimation)</p></li>
+<li><p><strong>precomputed_grain_properties_fname</strong> (<em>str</em>) – Name of the pkl file storing pre-computed grain material properties</p></li>
+<li><p><strong>T_min</strong> (<em>float</em>) – Min/Max temprature for temprature grid</p></li>
+<li><p><strong>T_max</strong> (<em>float</em>) – Min/Max temprature for temprature grid</p></li>
+<li><p><strong>N_T</strong> (<em>int</em>) – Temperature grid resolution</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>T_crit</strong> (<em>numpy array</em>) – Sublimation temperatures</p></li>
+<li><p><strong>T</strong> (<em>numpy array</em>) – Temperature grid</p></li>
+<li><p><strong>lam</strong> (<em>numpy array</em>) – Wavelength grid</p></li>
+<li><p><strong>kappa</strong> (<em>numpy array</em>) – absorption opacity at given lam
+2D array, first dimension corresponds to temperature range</p></li>
+<li><p><strong>kappa_p</strong> (<em>numpy array</em>) – Planck mean opacity</p></li>
+<li><p><strong>kappa_r</strong> (<em>numpy array</em>) – Rosseland mean opacity</p></li>
+<li><p><strong>kappa_s, kappa_s_p, kappa_s_r</strong> (<em>numpy array</em>) – same as kappa, kappa_p, kappa_r, but for effective scattering opacity
+(1-g)*kappa_scatter</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="disk_model.generate_disk_property_table">
+<span class="sig-prename descclassname"><span class="pre">disk_model.</span></span><span class="sig-name descname"><span class="pre">generate_disk_property_table</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opacity_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_T_eff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_Sigma_cs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_eff_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.generate_disk_property_table" title="Link to this definition"></a></dt>
+<dd><p>Generate a table that maps T_eff and Sigma/cs to other local disk
+properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>opacity_table</strong> (<em>dict</em>) – Opacity table from generate_opacity_table()</p></li>
+<li><p><strong>N_T_eff</strong> (<em>int</em>) – Resolution of the grid</p></li>
+<li><p><strong>N_Sigma_cs</strong> (<em>int</em>) – Resolution of the grid</p></li>
+<li><p><strong>T_eff_min</strong> (<em>float</em>) – Minimum T_eff (max T_eff is determined automatically)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>A dictionary with the following keys:</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>T_eff_grid<span class="classifier">numpy array</span></dt><dd><p>Effective temperature grid</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Sigma_cs_l, Sigma_cs_r<span class="classifier">numpy array</span></dt><dd><p>Min/Max Sigma/cs allowed at given T_eff</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>x<span class="classifier">numpy array</span></dt><dd><p>Normalized log(Sigma/cs) grid.
+We map x=[0,1] to the full range of allowed log(Sigma/cs)
+uniformly.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Sigma, cs, tau_p_mid, tau_r_mid, T_mid<span class="classifier">numpy array</span></dt><dd><p>local disk properties
+for given (T,x)</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="disk_model.DiskModel">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">disk_model.</span></span><span class="sig-name descname"><span class="pre">DiskModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opacity_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disk_property_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Parametrized disk model for generating radial porfiles of disk
+properties and flux density at given wavelengths.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskModel.M">
+<span class="sig-name descname"><span class="pre">M</span></span><a class="headerlink" href="#disk_model.DiskModel.M" title="Link to this definition"></a></dt>
+<dd><p>Total mass (g)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskModel.Mstar">
+<span class="sig-name descname"><span class="pre">Mstar</span></span><a class="headerlink" href="#disk_model.DiskModel.Mstar" title="Link to this definition"></a></dt>
+<dd><p>Stellar mass (g)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskModel.Mdot">
+<span class="sig-name descname"><span class="pre">Mdot</span></span><a class="headerlink" href="#disk_model.DiskModel.Mdot" title="Link to this definition"></a></dt>
+<dd><p>Accretion rate (g/s)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskModel.Rd">
+<span class="sig-name descname"><span class="pre">Rd</span></span><a class="headerlink" href="#disk_model.DiskModel.Rd" title="Link to this definition"></a></dt>
+<dd><p>Disk size (cm)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskModel.Q">
+<span class="sig-name descname"><span class="pre">Q</span></span><a class="headerlink" href="#disk_model.DiskModel.Q" title="Link to this definition"></a></dt>
+<dd><p>Toomre Q</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskModel.R">
+<span class="sig-name descname"><span class="pre">R</span></span><a class="headerlink" href="#disk_model.DiskModel.R" title="Link to this definition"></a></dt>
+<dd><p>Radius grid (R[0]=0) (cm)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">Sigma,</span> <span class="pre">T_mid,</span> <span class="pre">tau_p_mid,</span> <span class="pre">tau_r_mid</span></span></dt>
+<dd><p>Radial profile at R[1:]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskModel.MR">
+<span class="sig-name descname"><span class="pre">MR</span></span><a class="headerlink" href="#disk_model.DiskModel.MR" title="Link to this definition"></a></dt>
+<dd><p>M(&lt;R) profile at R[1:] (cm)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>numpy array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#disk_model.DiskModel.generate_disk_profile" title="disk_model.DiskModel.generate_disk_profile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_disk_profile</span></code></a>([Mstar, Mdot, Rd, Q, ...])</p></td>
+<td><p>Generate radial disk profile (Sigma, T_mid, tau_p_mid, tau_r_mid)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#disk_model.DiskModel.generate_observed_flux" title="disk_model.DiskModel.generate_observed_flux"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_observed_flux</span></code></a>(cosI[, scattering])</p></td>
+<td><p>Generate flux density at observed wavelengths</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#disk_model.DiskModel.set_lam_obs_list" title="disk_model.DiskModel.set_lam_obs_list"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_lam_obs_list</span></code></a>(lam_obs_list)</p></td>
+<td><p>Set wavelengths of observation</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>generate_observed_flux_single_wavelength</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>generate_observed_flux_single_wavelength_no_scattering</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>load_disk_property_functions</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>load_opacity_functions</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>solve_local_disk_properties</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.generate_disk_profile">
+<span class="sig-name descname"><span class="pre">generate_disk_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Mstar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mdot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_R</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_itr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_itr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.generate_disk_profile" title="Link to this definition"></a></dt>
+<dd><p>Generate radial disk profile (Sigma, T_mid, tau_p_mid, tau_r_mid)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Mstar</strong> (<em>float</em>) – Stellar mass (g)</p></li>
+<li><p><strong>Mdot</strong> (<em>float</em>) – Accretion rate (g/s)</p></li>
+<li><p><strong>Rd</strong> (<em>float</em>) – Disk size (cm)</p></li>
+<li><p><strong>Q</strong> (<em>float</em>) – Toomre Q</p></li>
+<li><p><strong>N_R</strong> (<em>int</em>) – Number of R grid points</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.generate_observed_flux">
+<span class="sig-name descname"><span class="pre">generate_observed_flux</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cosI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scattering</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.generate_observed_flux" title="Link to this definition"></a></dt>
+<dd><p>Generate flux density at observed wavelengths</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.generate_observed_flux_single_wavelength">
+<span class="sig-name descname"><span class="pre">generate_observed_flux_single_wavelength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cosI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_kappa_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_kappa_s_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.generate_observed_flux_single_wavelength" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.generate_observed_flux_single_wavelength_no_scattering">
+<span class="sig-name descname"><span class="pre">generate_observed_flux_single_wavelength_no_scattering</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cosI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f_kappa_obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N_tau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tau_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.generate_observed_flux_single_wavelength_no_scattering" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.load_disk_property_functions">
+<span class="sig-name descname"><span class="pre">load_disk_property_functions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disk_property_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.load_disk_property_functions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.load_opacity_functions">
+<span class="sig-name descname"><span class="pre">load_opacity_functions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">opacity_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.load_opacity_functions" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.set_lam_obs_list">
+<span class="sig-name descname"><span class="pre">set_lam_obs_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lam_obs_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.set_lam_obs_list" title="Link to this definition"></a></dt>
+<dd><p>Set wavelengths of observation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskModel.solve_local_disk_properties">
+<span class="sig-name descname"><span class="pre">solve_local_disk_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Omega</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kappa</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskModel.solve_local_disk_properties" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="disk_model.DiskImage">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">disk_model.</span></span><span class="sig-name descname"><span class="pre">DiskImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ra_deg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dec_deg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_pc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rms_Jy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disk_pa</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_size_au</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">400</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_background</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskImage" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Stores the image of a system (at one wavelength).
+Can also be used to generate mock observation for given F(R) and
+compare mock observation with image.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskImage.img">
+<span class="sig-name descname"><span class="pre">img</span></span><a class="headerlink" href="#disk_model.DiskImage.img" title="Link to this definition"></a></dt>
+<dd><p>observed image</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskImage.img_model">
+<span class="sig-name descname"><span class="pre">img_model</span></span><a class="headerlink" href="#disk_model.DiskImage.img_model" title="Link to this definition"></a></dt>
+<dd><p>mock observation image</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskImage.au_per_pix">
+<span class="sig-name descname"><span class="pre">au_per_pix</span></span><a class="headerlink" href="#disk_model.DiskImage.au_per_pix" title="Link to this definition"></a></dt>
+<dd><p>au per pixel</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">(see</span> <span class="pre">others</span> <span class="pre">in</span> <span class="pre">__init__)</span></span></dt>
+<dd></dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#disk_model.DiskImage.generate_mask" title="disk_model.DiskImage.generate_mask"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_mask</span></code></a>(mask_radius, cosI)</p></td>
+<td><p>Generate a mask covering radius (in au) between mask_radius.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#disk_model.DiskImage.generate_mock_observation" title="disk_model.DiskImage.generate_mock_observation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_mock_observation</span></code></a>(R, I, cosI)</p></td>
+<td><p>Generate mock observation for gievn I(R).</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>evaluate_disk_chi_sq</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>evaluate_log_likelihood</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>evaluate_log_likelihood_old</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskImage.evaluate_disk_chi_sq">
+<span class="sig-name descname"><span class="pre">evaluate_disk_chi_sq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_log_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.34657359027997264</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskImage.evaluate_disk_chi_sq" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskImage.evaluate_log_likelihood">
+<span class="sig-name descname"><span class="pre">evaluate_log_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_log_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.34657359027997264</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskImage.evaluate_log_likelihood" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskImage.evaluate_log_likelihood_old">
+<span class="sig-name descname"><span class="pre">evaluate_log_likelihood_old</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma_log_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.34657359027997264</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskImage.evaluate_log_likelihood_old" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskImage.generate_mask">
+<span class="sig-name descname"><span class="pre">generate_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mask_radius</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosI</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskImage.generate_mask" title="Link to this definition"></a></dt>
+<dd><p>Generate a mask covering radius (in au) between mask_radius.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mask_radius</strong> – (2,) array</p></li>
+<li><p><strong>cosI</strong> – disk inclination</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>2d array of mask</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mask</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskImage.generate_mock_observation">
+<span class="sig-name descname"><span class="pre">generate_mock_observation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">R</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">I</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosI</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskImage.generate_mock_observation" title="Link to this definition"></a></dt>
+<dd><p>Generate mock observation for gievn I(R). (here I is the intensity)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>R</strong> – 1d array, I = I(R) at R[1:]
+so len(F) = len(R)-1</p></li>
+<li><p><strong>I</strong> – 1d array, I = I(R) at R[1:]
+so len(F) = len(R)-1</p></li>
+<li><p><strong>cosI</strong> – inclination</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="disk_model.DiskFitting">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">disk_model.</span></span><span class="sig-name descname"><span class="pre">DiskFitting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">opacity_table</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disk_property_table</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskFitting" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for fitting multi-wavelength observations of a system.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.source_name">
+<span class="sig-name descname"><span class="pre">source_name</span></span><a class="headerlink" href="#disk_model.DiskFitting.source_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.disk_model">
+<span class="sig-name descname"><span class="pre">disk_model</span></span><a class="headerlink" href="#disk_model.DiskFitting.disk_model" title="Link to this definition"></a></dt>
+<dd><p>DiskModel object</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.disk_image_list">
+<span class="sig-name descname"><span class="pre">disk_image_list</span></span><a class="headerlink" href="#disk_model.DiskFitting.disk_image_list" title="Link to this definition"></a></dt>
+<dd><p>list of DiskImage objects</p>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#disk_model.DiskFitting.fit" title="disk_model.DiskFitting.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>([Mdot_fn, Mdot_arg, Q, weights, ...])</p></td>
+<td><p>Fit model to observation.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>add_observation</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>evaluate_log_likelihood</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><strong>mcmc_fit</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>set_cosI</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.add_observation">
+<span class="sig-name descname"><span class="pre">add_observation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">disk_image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lam_obs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskFitting.add_observation" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.evaluate_log_likelihood">
+<span class="sig-name descname"><span class="pre">evaluate_log_likelihood</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Mstar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mdot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskFitting.evaluate_log_likelihood" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Mdot_fn=&lt;function</span> <span class="pre">const_Mdot_over_Mstar&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mdot_arg=3.170979198376459e-13</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q=1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weights=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kwargs_for_minimize=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskFitting.fit" title="Link to this definition"></a></dt>
+<dd><p>Fit model to observation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Mdot_fn</strong> – a function that takes (Mstar, Rd, Mdot_arg) and
+returns Mdot</p></li>
+<li><p><strong>Mdot_arg</strong> – the last argument for Mdot_fn()</p></li>
+<li><p><strong>Q</strong> – Toomre Q to be passed to disk model</p></li>
+<li><p><strong>weights</strong> – weights for each observed wavelength</p></li>
+<li><p><strong>kwargs_for_minimize</strong> – kwargs to be passed to
+optimize.minimize();
+see self.default_kwargs_for_minimize</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.mcmc_fit">
+<span class="sig-name descname"><span class="pre">mcmc_fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Mstar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mdot</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskFitting.mcmc_fit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="disk_model.DiskFitting.set_cosI">
+<span class="sig-name descname"><span class="pre">set_cosI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cosI</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#disk_model.DiskFitting.set_cosI" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="vertical.html" class="btn btn-neutral float-right" title="Vertical Structure" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yi-Ping Hung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

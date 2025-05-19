@@ -1,0 +1,566 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pipelines to RADMC-3D &mdash; GIdisk2obs to RADMC3D 05-2025 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=9c599b8b"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Examples" href="example.html" />
+    <link rel="prev" title="Vertical Structure" href="vertical.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            GIdisk2obs to RADMC3D
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="x22.html">X22 Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="vertical.html">Vertical Structure</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Pipelines to RADMC-3D</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simulations">Simulations</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dust-continuum">Dust Continuum</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#molecular-line-emissions">Molecular Line Emissions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#spectral-energy-distribution-sed">Spectral Energy Distribution (SED)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#modules">Modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup.radmc3d_setup"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.duplicate_file"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.duplicate_file()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.get_continuumlambda"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.get_continuumlambda()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.get_diskcontrol"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.get_diskcontrol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.get_gasdensitycontrol"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.get_gasdensitycontrol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.get_heatcontrol"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.get_heatcontrol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.get_linecontrol"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.get_linecontrol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.get_mastercontrol"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.get_mastercontrol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.get_vfieldcontrol"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.get_vfieldcontrol()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.write_amr_grid"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.write_amr_grid()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.write_dust_density"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.write_dust_density()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setup.radmc3d_setup.write_dust_opac"><code class="docutils literal notranslate"><span class="pre">radmc3d_setup.write_dust_opac()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#simulate.generate_simulation"><code class="docutils literal notranslate"><span class="pre">generate_simulation</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.generate_simulation.generate_continuum"><code class="docutils literal notranslate"><span class="pre">generate_simulation.generate_continuum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.generate_simulation.generate_cube"><code class="docutils literal notranslate"><span class="pre">generate_simulation.generate_cube()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.generate_simulation.generate_line_spectrum"><code class="docutils literal notranslate"><span class="pre">generate_simulation.generate_line_spectrum()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.generate_simulation.generate_sed"><code class="docutils literal notranslate"><span class="pre">generate_simulation.generate_sed()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.generate_simulation.save_npzfile"><code class="docutils literal notranslate"><span class="pre">generate_simulation.save_npzfile()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#simulate.generate_simulation.save_outfile"><code class="docutils literal notranslate"><span class="pre">generate_simulation.save_outfile()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Examples</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GIdisk2obs to RADMC3D</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Pipelines to RADMC-3D</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/radmc3d.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pipelines-to-radmc-3d">
+<h1>Pipelines to RADMC-3D<a class="headerlink" href="#pipelines-to-radmc-3d" title="Link to this heading"></a></h1>
+<section id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h2>
+</section>
+<section id="simulations">
+<h2>Simulations<a class="headerlink" href="#simulations" title="Link to this heading"></a></h2>
+<section id="dust-continuum">
+<h3>Dust Continuum<a class="headerlink" href="#dust-continuum" title="Link to this heading"></a></h3>
+</section>
+<section id="molecular-line-emissions">
+<h3>Molecular Line Emissions<a class="headerlink" href="#molecular-line-emissions" title="Link to this heading"></a></h3>
+</section>
+<section id="spectral-energy-distribution-sed">
+<h3>Spectral Energy Distribution (SED)<a class="headerlink" href="#spectral-energy-distribution-sed" title="Link to this heading"></a></h3>
+</section>
+</section>
+<section id="modules">
+<h2>Modules<a class="headerlink" href="#modules" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="setup.radmc3d_setup">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">setup.</span></span><span class="sig-name descname"><span class="pre">radmc3d_setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A class to initialize the radmc3d simulation.</p>
+<p class="rubric">Examples</p>
+<p>Simplest usage (defaulting everything):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test</span> <span class="o">=</span> <span class="n">radmc3d_setup</span><span class="p">()</span>
+<span class="n">test</span><span class="o">.</span><span class="n">get_mastercontrol</span><span class="p">()</span>
+<span class="n">test</span><span class="o">.</span><span class="n">get_continuumlambda</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>More complicated cases:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">test</span> <span class="o">=</span> <span class="n">radmc3d_setup</span><span class="p">(</span><span class="n">silent</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">test</span><span class="o">.</span><span class="n">get_mastercontrol</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;radmctest.inp&#39;</span><span class="p">,</span>
+                       <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;this is a test&#39;</span><span class="p">,</span>
+                       <span class="n">incl_dust</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">test</span><span class="o">.</span><span class="n">get_linecontrol</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;lines_test.inp&#39;</span><span class="p">,</span>
+                     <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;this is a test&#39;</span><span class="p">,</span>
+                     <span class="n">line1</span><span class="o">=</span><span class="s1">&#39;ch3oh leiden 0 0&#39;</span><span class="p">,</span>
+                     <span class="n">line2</span><span class="o">=</span><span class="s1">&#39;co leiden 0 0&#39;</span><span class="p">)</span>
+
+<span class="n">lam1</span><span class="p">,</span> <span class="n">lam2</span><span class="p">,</span> <span class="n">lam3</span><span class="p">,</span> <span class="n">lam4</span> <span class="o">=</span> <span class="mf">0.1e0</span><span class="p">,</span> <span class="mf">1.0e2</span><span class="p">,</span> <span class="mf">5.0e3</span><span class="p">,</span> <span class="mf">1.0e4</span>
+<span class="n">n12</span><span class="p">,</span> <span class="n">n23</span><span class="p">,</span> <span class="n">n34</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span>
+<span class="n">lam12</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">lam1</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">lam2</span><span class="p">),</span> <span class="n">n12</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">lam23</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">lam2</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">lam3</span><span class="p">),</span> <span class="n">n23</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">lam34</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logspace</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">lam3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">lam4</span><span class="p">),</span> <span class="n">n34</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">lams</span> <span class="o">=</span> <span class="p">[</span><span class="n">lam12</span><span class="p">,</span> <span class="n">lam23</span><span class="p">,</span> <span class="n">lam34</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lams</span><span class="p">)):</span>
+    <span class="n">append</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">test</span><span class="o">.</span><span class="n">get_continuumlambda</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;wavelength_micron_test.inp&#39;</span><span class="p">,</span>
+                             <span class="n">comment</span><span class="o">=</span><span class="s1">&#39;this is a test&#39;</span><span class="p">,</span>
+                             <span class="n">lambda_micron</span><span class="o">=</span><span class="n">lams</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">append</span><span class="o">=</span><span class="n">append</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#setup.radmc3d_setup.duplicate_file" title="setup.radmc3d_setup.duplicate_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">duplicate_file</span></code></a>(default_filename, filename[, ...])</p></td>
+<td><p>A small function to duplicate the .inp files.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#setup.radmc3d_setup.get_continuumlambda" title="setup.radmc3d_setup.get_continuumlambda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_continuumlambda</span></code></a>([filename, comment, ...])</p></td>
+<td><p>Preparing the wavelength file (wavelengths are in units of micron).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#setup.radmc3d_setup.get_diskcontrol" title="setup.radmc3d_setup.get_diskcontrol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_diskcontrol</span></code></a>([d_to_g_ratio, a_max, q, ...])</p></td>
+<td><p>Preparing the control file for disk model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#setup.radmc3d_setup.get_gasdensitycontrol" title="setup.radmc3d_setup.get_gasdensitycontrol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_gasdensitycontrol</span></code></a>([abundance, snowline, ...])</p></td>
+<td><p>Preparing the control file for gas density.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#setup.radmc3d_setup.get_heatcontrol" title="setup.radmc3d_setup.get_heatcontrol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_heatcontrol</span></code></a>([L_star, R_star, accretion, ...])</p></td>
+<td><p>Preparing the control file for heating mechanism.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#setup.radmc3d_setup.get_linecontrol" title="setup.radmc3d_setup.get_linecontrol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_linecontrol</span></code></a>([filename, comment])</p></td>
+<td><p>Preparing the control file for lines.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#setup.radmc3d_setup.get_mastercontrol" title="setup.radmc3d_setup.get_mastercontrol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_mastercontrol</span></code></a>([filename, comment, ...])</p></td>
+<td><p>Preparing the master control file for radmc3d.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#setup.radmc3d_setup.get_vfieldcontrol" title="setup.radmc3d_setup.get_vfieldcontrol"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_vfieldcontrol</span></code></a>([Kep, vinfall, Rcb, outflow])</p></td>
+<td><p>Preparing the control file for velocity field.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#setup.radmc3d_setup.write_dust_density" title="setup.radmc3d_setup.write_dust_density"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_dust_density</span></code></a>()</p></td>
+<td><p>Preparing the control file for dust density.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#setup.radmc3d_setup.write_dust_opac" title="setup.radmc3d_setup.write_dust_opac"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write_dust_opac</span></code></a>()</p></td>
+<td><p>Preparing the control file for dust opacity.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>write_amr_grid</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.duplicate_file">
+<span class="sig-name descname"><span class="pre">duplicate_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">default_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timemark</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.duplicate_file" title="Link to this definition"></a></dt>
+<dd><p>A small function to duplicate the .inp files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>default_filename</strong> (<em>str</em>) – Default output file name</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Filename of the duplication</p></li>
+<li><p><strong>comment</strong> (<em>str</em>) – If present, include it as header in the duplicated output file.</p></li>
+<li><p><strong>timemark</strong> (<em>str</em>) – If present, include it as header in the duplicated output file.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.get_continuumlambda">
+<span class="sig-name descname"><span class="pre">get_continuumlambda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_micron</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">silent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.get_continuumlambda" title="Link to this definition"></a></dt>
+<dd><p>Preparing the wavelength file (wavelengths are in units of micron).
+This is the file that sets the discrete wavelength points for the continuum radiative transfer calculations.
+If this method is called for multiple times, by default it concatenate the wavelengths in each input,
+unless the input wavelengths do not increase or decrease monotonically.
+In that case, it gives a warning without editing the files.
+If no lambda_micron is given, it recreates the ‘wavelength_micron.inp’ file using the default wavelengths.</p>
+<p>Format:
+nlam
+lambda[1]
+…
+…
+lambda[nlam]</p>
+<p><a class="reference external" href="https://www.ita.uni-heidelberg.de/~dullemond/software/radmc-3d/manual_radmc3d/inputoutputfiles.html#sec-wavelengths">https://www.ita.uni-heidelberg.de/~dullemond/software/radmc-3d/manual_radmc3d/inputoutputfiles.html#sec-wavelengths</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>string</em>) – output filename. (default: wavelength_micron.inp).
+It will still creat a file with default name,
+but will duplicate an output file with the specified name.</p></li>
+<li><p><strong>comment</strong> (<em>string</em>) – comment to add to the file header (default: None)</p></li>
+<li><p><strong>lambda_micron</strong> (<em>numpy array</em>) – wavelength to calculate continuum (in units of micron).</p></li>
+<li><p><strong>append</strong> (<em>bool</em>) – if False, remove the existing wavelength_micron.inp and ignore any information in it (default: False)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Wavelengths must be monotonically increasing/decreasing.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Wavelength coverage must include the wavelengths at which the stellar spectra have most of their energy,
+and at which the dust cools predominantly. This in practice means that this should go all the way from
+0.1 micron to 1000 micron</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.get_diskcontrol">
+<span class="sig-name descname"><span class="pre">get_diskcontrol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d_to_g_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-3.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mass_of_star</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Accretion_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Radius_of_disk</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Q</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NR</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NTheta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NPhi</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_table_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.get_diskcontrol" title="Link to this definition"></a></dt>
+<dd><p>Preparing the control file for disk model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d_to_g_ratio</strong> (<em>float</em>) – dust-to-gas mass ratio</p></li>
+<li><p><strong>a_max</strong> (<em>float</em>) – Maxmum grain size (unit: mm)</p></li>
+<li><p><strong>q</strong> (<em>float</em>) – Slope for grain size distribution</p></li>
+<li><p><strong>Mass_of_star</strong> (<em>float</em>) – Mass of protostar (unit: M_sun)</p></li>
+<li><p><strong>Accretion_rate</strong> (<em>float</em>) – Accretion rate    (unit: M_sun/yr)</p></li>
+<li><p><strong>Radius_of_disk</strong> (<em>float</em>) – Radius of disk    (unit: AU)</p></li>
+<li><p><strong>Q</strong> (<em>float</em>) – Toomre index</p></li>
+<li><p><strong>NR</strong> (<em>int</em>) – Resolution in R axis</p></li>
+<li><p><strong>NTheta</strong> (<em>int</em>) – Resolution in theta axis</p></li>
+<li><p><strong>NPhi</strong> (<em>int</em>) – Resolution in ohi axis</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.get_gasdensitycontrol">
+<span class="sig-name descname"><span class="pre">get_gasdensitycontrol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">abundance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">snowline</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enhancement</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gas_inside_rcb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.get_gasdensitycontrol" title="Link to this definition"></a></dt>
+<dd><p>Preparing the control file for gas density.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abundance</strong> (<em>float</em>) – Abundance of the simulated gas molecule compared with hydrogen</p></li>
+<li><p><strong>snowline</strong> (<em>float</em>) – At which temperature causes desorption from dust grains (unit:K)
+(if None, there is no abundance enhancement)</p></li>
+<li><p><strong>enhancement</strong> (<em>float</em>) – How much the abundance is enhanced inside snowline</p></li>
+<li><p><strong>gas_inside_rcb</strong> (<em>bool</em>) – Whether gas is absent inside centrifugal barrier</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.get_heatcontrol">
+<span class="sig-name descname"><span class="pre">get_heatcontrol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">L_star</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">R_star</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accretion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">irradiation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.get_heatcontrol" title="Link to this definition"></a></dt>
+<dd><p>Preparing the control file for heating mechanism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>accretion</strong> (<em>bool</em>) – Accretion heating mechanism due to release of gravitational energy</p></li>
+<li><p><strong>irradiation</strong> (<em>bool</em>) – Irradiation heating from central protostar</p></li>
+<li><p><strong>L_star</strong> (<em>float</em>) – Luminosity of central protostar (unit: L_sun)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If both heating mechanisms are True, combine accretion and irradiation temperature map.</p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.get_linecontrol">
+<span class="sig-name descname"><span class="pre">get_linecontrol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.get_linecontrol" title="Link to this definition"></a></dt>
+<dd><p>Preparing the control file for lines.</p>
+<p>Input :</p>
+<dl class="simple">
+<dt>filename (string)<span class="classifier">output filename. (default: lines.inp).</span></dt><dd><p>It will still creat a file with default name,
+but will duplicate an output file with the specified name.</p>
+</dd>
+</dl>
+<p>See example for how to include lines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.get_mastercontrol">
+<span class="sig-name descname"><span class="pre">get_mastercontrol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incl_dust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incl_lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nphot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nphot_scat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scattering_mode_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">istar_sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_cpu</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.get_mastercontrol" title="Link to this definition"></a></dt>
+<dd><p>Preparing the master control file for radmc3d.</p>
+<p class="rubric">Example</p>
+<p>test.get_mastercontrol(comment = ‘this is a test’, a=1.0, b=2.0, c=3.0)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>string</em>) – output filename. (default: radmc3d.inp)
+It will still creat a file with default name, but will duplicate an output file with the specified name.</p></li>
+<li><p><strong>comment</strong> (<em>string</em>) – comment to add to the file header (default: None)</p></li>
+<li><p><strong>incl_dust</strong> (<em>0/1/None</em>) – 0: force not include dust/ 1: force include / None: let radmc3d determine</p></li>
+<li><p><strong>incl_lines</strong> (<em>0/1/None</em>) – 0: force not include line/ 1: force include / None: let radmc3d determine</p></li>
+<li><p><strong>nphot</strong> (<em>int</em>) – The number of photon packages used for the thermal Monte Carlo simulation (default: 1000000)</p></li>
+<li><p><strong>nphot_scat</strong> (<em>int</em>) – The number of photon packages for the scattering Monte Carlo simulations, done before image-rendering (default: 1000000)</p></li>
+<li><p><strong>scattering_mode_max</strong> (<em>0/1/2/None</em>) – 0: no scattering / 1: isotropic scattering / 2: full scattering / None: let radmc decide (default: None)</p></li>
+<li><p><strong>istar_sphere</strong> (<em>0/1</em>) – If 0/1, treat stars as point-source/sphere (default: 1)</p></li>
+<li><p><strong>num_cpu</strong> (<em>int</em>) – number of cpu core to use (default: available threads-2)</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<dl class="simple">
+<dt>Other possible options (including using <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs) see</dt><dd><p><a class="reference external" href="https://www.ita.uni-heidelberg.de/~dullemond/software/radmc-3d/manual_radmc3d/inputoutputfiles.html">https://www.ita.uni-heidelberg.de/~dullemond/software/radmc-3d/manual_radmc3d/inputoutputfiles.html</a></p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.get_vfieldcontrol">
+<span class="sig-name descname"><span class="pre">get_vfieldcontrol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Kep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vinfall</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rcb</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outflow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.get_vfieldcontrol" title="Link to this definition"></a></dt>
+<dd><p>Preparing the control file for velocity field.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Kep</strong> (<em>bool</em>) – Keplerian azimuthal velocity field</p></li>
+<li><p><strong>vinfall</strong> (<em>float</em>) – Infall velocity (unit: Keplerian velocity) e.g., 1 for 1 Keplerian velocity of infall direction</p></li>
+<li><p><strong>Rcb</strong> (<em>float</em>) – Centrifugal barrier (unit: AU)</p></li>
+<li><p><strong>outflow</strong> (<em>float</em>) – Outflow velocity (unit: Keplerian velocity)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.write_amr_grid">
+<span class="sig-name descname"><span class="pre">write_amr_grid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.write_amr_grid" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.write_dust_density">
+<span class="sig-name descname"><span class="pre">write_dust_density</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.write_dust_density" title="Link to this definition"></a></dt>
+<dd><p>Preparing the control file for dust density.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="setup.radmc3d_setup.write_dust_opac">
+<span class="sig-name descname"><span class="pre">write_dust_opac</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#setup.radmc3d_setup.write_dust_opac" title="Link to this definition"></a></dt>
+<dd><p>Preparing the control file for dust opacity.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="simulate.generate_simulation">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">simulate.</span></span><span class="sig-name descname"><span class="pre">generate_simulation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_npz</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.generate_simulation" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#simulate.generate_simulation.generate_continuum" title="simulate.generate_simulation.generate_continuum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_continuum</span></code></a>([dir, fname, incl, wav, ...])</p></td>
+<td><p>This function will generate a continuum image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#simulate.generate_simulation.generate_cube" title="simulate.generate_simulation.generate_cube"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_cube</span></code></a>([dir, fname, npix, sizeau, ...])</p></td>
+<td><p>This function will generate a cube of spectral line.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#simulate.generate_simulation.generate_line_spectrum" title="simulate.generate_simulation.generate_line_spectrum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_line_spectrum</span></code></a>([dir, fname, incl, ...])</p></td>
+<td><p>This function will generate a line spectrum.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#simulate.generate_simulation.generate_sed" title="simulate.generate_simulation.generate_sed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">generate_sed</span></code></a>([dir, fname, incl, freq_min, ...])</p></td>
+<td><p>This function will generate a spectral energy distribution (SED).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#simulate.generate_simulation.save_npzfile" title="simulate.generate_simulation.save_npzfile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_npzfile</span></code></a>(data, dir, fname, **kwargs)</p></td>
+<td><p>This will only save image data regardless of other information The file tyep will be '<a href="#id3"><span class="problematic" id="id4">*</span></a>.npz', which the storage may be kB-scale</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#simulate.generate_simulation.save_outfile" title="simulate.generate_simulation.save_outfile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_outfile</span></code></a>(dir, fname, **kwargs)</p></td>
+<td><p>This will save whole information of simulation. The file type will be '<a href="#id5"><span class="problematic" id="id6">*</span></a>.out', which the storage may be MB-scale.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.generate_simulation.generate_continuum">
+<span class="sig-name descname"><span class="pre">generate_continuum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">73</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">wav</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1300</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sizeau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">posang</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.generate_simulation.generate_continuum" title="Link to this definition"></a></dt>
+<dd><p>This function will generate a continuum image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dir</strong> (<em>str</em>) – Directory to save the output</p></li>
+<li><p><strong>fname</strong> (<em>str</em>) – File name to save the output</p></li>
+<li><p><strong>incl</strong> (<em>float</em>) – Inclination angle of the disk</p></li>
+<li><p><strong>wav</strong> (<em>float</em>) – Wavelength to simulate</p></li>
+<li><p><strong>npix</strong> (<em>int</em>) – Number of map’s pixels</p></li>
+<li><p><strong>sizeau</strong> (<em>float</em>) – Map’s span</p></li>
+<li><p><strong>posang</strong> (<em>float</em>) – Position angle of the disk</p></li>
+<li><p><strong>scat</strong> (<em>bool</em>) – If True, scattering is included. (Time-consuming)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.generate_simulation.generate_cube">
+<span class="sig-name descname"><span class="pre">generate_cube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sizeau</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">73</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">240</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vkms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">11</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">posang</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_gas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.generate_simulation.generate_cube" title="Link to this definition"></a></dt>
+<dd><p>This function will generate a cube of spectral line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dir</strong> (<em>str</em>) – Directory to save the output</p></li>
+<li><p><strong>fname</strong> (<em>str</em>) – File name to save the output</p></li>
+<li><p><strong>npix</strong> (<em>int</em>) – Number of map’s pixels</p></li>
+<li><p><strong>sizeau</strong> (<em>float</em>) – Map’s span</p></li>
+<li><p><strong>incl</strong> (<em>float</em>) – Inclination angle of the disk</p></li>
+<li><p><strong>line</strong> (<em>int</em>) – Transistion level (see ‘molecule_ch3oh.inp’)</p></li>
+<li><p><strong>v_width</strong> (<em>float</em>) – Range of velocity to simulate</p></li>
+<li><p><strong>vkms</strong> (<em>float</em>) – Velocity of the line center</p></li>
+<li><p><strong>nlam</strong> (<em>int</em>) – Number of velocities</p></li>
+<li><p><strong>nodust</strong> (<em>bool</em>) – If False, dust effect is included</p></li>
+<li><p><strong>scat</strong> (<em>bool</em>) – If True and nodust=False, scattering is included. (Time-consuming)</p></li>
+<li><p><strong>extracted_gas</strong> (<em>bool</em>) – If True, spectral line is extracted (I_{dust+gas}-I_{dust})</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.generate_simulation.generate_line_spectrum">
+<span class="sig-name descname"><span class="pre">generate_line_spectrum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">73</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">line</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">240</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vkms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodust</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extract_gas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.generate_simulation.generate_line_spectrum" title="Link to this definition"></a></dt>
+<dd><p>This function will generate a line spectrum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dir</strong> (<em>str</em>) – Directory to save the output</p></li>
+<li><p><strong>fname</strong> (<em>str</em>) – File name to save the output</p></li>
+<li><p><strong>incl</strong> (<em>float</em>) – Inclination angle of the disk</p></li>
+<li><p><strong>line</strong> (<em>int</em>) – Transistion level (see ‘molecule_ch3oh.inp’)</p></li>
+<li><p><strong>v_width</strong> (<em>float</em>) – Range of velocity to simulate</p></li>
+<li><p><strong>nlam</strong> (<em>int</em>) – Number of velocities</p></li>
+<li><p><strong>vkms</strong> (<em>float</em>) – Velocity of the line center</p></li>
+<li><p><strong>nodust</strong> (<em>bool</em>) – If False, dust effect is included</p></li>
+<li><p><strong>scat</strong> (<em>bool</em>) – If True and nodust=False, scattering is included. (Time-consuming)</p></li>
+<li><p><strong>extracted_gas</strong> (<em>bool</em>) – If True, spectral line is extracted (I_{dust+gas}-I_{dust})</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.generate_simulation.generate_sed">
+<span class="sig-name descname"><span class="pre">generate_sed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./test/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'test'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">incl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">73</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_min</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlam</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.generate_simulation.generate_sed" title="Link to this definition"></a></dt>
+<dd><p>This function will generate a spectral energy distribution (SED).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dir</strong> (<em>str</em>) – Directory to save the output</p></li>
+<li><p><strong>fname</strong> (<em>str</em>) – File name to save the output</p></li>
+<li><p><strong>incl</strong> (<em>float</em>) – Inclination angle of the disk</p></li>
+<li><p><strong>freq_min</strong> (<em>float</em>) – Minimum frequency to simulate</p></li>
+<li><p><strong>freq_max</strong> (<em>float</em>) – Maximum frequency to simulate</p></li>
+<li><p><strong>nlam</strong> (<em>int</em>) – Number of wavelengths</p></li>
+<li><p><strong>scat</strong> (<em>bool</em>) – If True, scattering is included. (Time-consuming)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.generate_simulation.save_npzfile">
+<span class="sig-name descname"><span class="pre">save_npzfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.generate_simulation.save_npzfile" title="Link to this definition"></a></dt>
+<dd><p>This will only save image data regardless of other information
+The file tyep will be ‘<a href="#id7"><span class="problematic" id="id8">*</span></a>.npz’, which the storage may be kB-scale</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="simulate.generate_simulation.save_outfile">
+<span class="sig-name descname"><span class="pre">save_outfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fname</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#simulate.generate_simulation.save_outfile" title="Link to this definition"></a></dt>
+<dd><p>This will save whole information of simulation.
+The file type will be ‘<a href="#id9"><span class="problematic" id="id10">*</span></a>.out’, which the storage may be MB-scale</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="vertical.html" class="btn btn-neutral float-left" title="Vertical Structure" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="example.html" class="btn btn-neutral float-right" title="Examples" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Yi-Ping Hung.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

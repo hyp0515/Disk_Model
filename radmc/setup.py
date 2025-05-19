@@ -22,47 +22,47 @@ from X22_model.disk_model import *
 from radmc.spherical_x22 import DiskModel_spherical
 
 class radmc3d_setup:
-    '''
+    """
     A class to initialize the radmc3d simulation.
 
-    Example:
-      Simplest ussage (defaulting everything):
+    Examples
+    --------
+    Simplest usage (defaulting everything):
+
+    .. code-block:: python
+
         test = radmc3d_setup()
         test.get_mastercontrol()
         test.get_continuumlambda()
 
-      More complicated cases:
-        test = radmc3d_setup(silent = False)
-        
-        test.get_mastercontrol(filename = 'radmctest.inp',
-                               comment = 'this is a test',
+    More complicated cases:
+
+    .. code-block:: python
+
+        test = radmc3d_setup(silent=False)
+
+        test.get_mastercontrol(filename='radmctest.inp',
+                               comment='this is a test',
                                incl_dust=1)
-        
-        test.get_linecontrol(filename = 'lines_test.inp',
-                             comment = 'this is a test',
+
+        test.get_linecontrol(filename='lines_test.inp',
+                             comment='this is a test',
                              line1='ch3oh leiden 0 0',
                              line2='co leiden 0 0')
-        lam1,lam2,lam3,lam4 = 0.1e0, 1.0e2, 5.0e3, 1.0e4
-        n12, n23, n34       = 100, 100, 50
-        lam12    = np.logspace(np.log10(lam1),np.log10(lam2),n12,endpoint=False)
-        lam23    = np.logspace(np.log10(lam2),np.log10(lam3),n23,endpoint=False)
-        lam34    = np.logspace(np.log10(lam3),np.log10(lam4),n34,endpoint=True)
-        lams = [
-                lam12,
-                lam23,
-                lam34
-                ]
+
+        lam1, lam2, lam3, lam4 = 0.1e0, 1.0e2, 5.0e3, 1.0e4
+        n12, n23, n34 = 100, 100, 50
+        lam12 = np.logspace(np.log10(lam1), np.log10(lam2), n12, endpoint=False)
+        lam23 = np.logspace(np.log10(lam2), np.log10(lam3), n23, endpoint=False)
+        lam34 = np.logspace(np.log10(lam3), np.log10(lam4), n34, endpoint=True)
+        lams = [lam12, lam23, lam34]
+
         for i in range(len(lams)):
-          if i == 0:
-            append = False
-          else:
-            append = True
-          test.get_continuumlambda(filename = 'wavelength_micron_test.inp',
-                                   comment = 'this is a test',
-                                   lambda_micron = lams[i], append = append )
-
-
-    '''
+            append = (i != 0)
+            test.get_continuumlambda(filename='wavelength_micron_test.inp',
+                                     comment='this is a test',
+                                     lambda_micron=lams[i], append=append)
+    """
 
     def __init__(self, silent = True):
       '''
@@ -107,22 +107,31 @@ class radmc3d_setup:
       Example:
         test.get_mastercontrol(comment = 'this is a test', a=1.0, b=2.0, c=3.0)
 
-      Input :
+      Parameters
+      -----------------------
       
-      filename (string) : output filename. (default: radmc3d.inp)
-                          It will still creat a file with default name, 
-                          but will duplicate an output file with the specified name.
-      comment  (string) : comment to add to the file header (default: None)
-      incl_dust (0/1/None)  : 0: force not include dust/ 1: force include / None: let radmc3d determine
-      incl_lines (0/1/None) : 0: force not include line/ 1: force include / None: let radmc3d determine
-      nphot    (int)    : The number of photon packages used for the thermal Monte Carlo simulation (default: 1000000)
-      nphot_scat (int)  : The number of photon packages for the scattering Monte Carlo simulations, 
-                          done before image-rendering (default: 1000000)
-      scattering_mode_max (0/1/2/None): 0: no scattering / 1: isotropic scattering / 2: full scattering /
-                                        None: let radmc decide (default: None)
-      istar_sphere (0/1) : if 0/1, treat stars as point-source/sphere (default: 1)
-      num_cpu  (int)    : number of cpu core to use (default: available threads-2)
-
+      filename : string
+          output filename. (default: radmc3d.inp)
+          It will still creat a file with default name, but will duplicate an output file with the specified name.
+      comment : string
+          comment to add to the file header (default: None)
+      incl_dust : 0/1/None  
+          0: force not include dust/ 1: force include / None: let radmc3d determine
+      incl_lines : 0/1/None
+          0: force not include line/ 1: force include / None: let radmc3d determine
+      nphot : int
+          The number of photon packages used for the thermal Monte Carlo simulation (default: 1000000)
+      nphot_scat : int
+          The number of photon packages for the scattering Monte Carlo simulations, done before image-rendering (default: 1000000)
+      scattering_mode_max : 0/1/2/None
+          0: no scattering / 1: isotropic scattering / 2: full scattering / None: let radmc decide (default: None)
+      istar_sphere : 0/1
+          If 0/1, treat stars as point-source/sphere (default: 1)
+      num_cpu : int
+        number of cpu core to use (default: available threads-2)
+      
+      Note
+      ------------------------
       Other possible options (including using **kwargs) see
         https://www.ita.uni-heidelberg.de/~dullemond/software/radmc-3d/manual_radmc3d/inputoutputfiles.html
 
@@ -198,13 +207,6 @@ class radmc3d_setup:
       In that case, it gives a warning without editing the files.
       If no lambda_micron is given, it recreates the 'wavelength_micron.inp' file using the default wavelengths.
 
-      Important note:
-      *Wavelengths must be monotonically increasing/decreasing.*
-
-      *wavelength coverage must include the wavelengths at which the stellar spectra have most of their energy, 
-       and at which the dust cools predominantly. This in practice means that this should go all the way from 
-       0.1 micron to 1000 micron*
-
       Format:
       nlam
       lambda[1]
@@ -214,14 +216,29 @@ class radmc3d_setup:
 
       https://www.ita.uni-heidelberg.de/~dullemond/software/radmc-3d/manual_radmc3d/inputoutputfiles.html#sec-wavelengths
 
-      Input :
-        filename (string) : output filename. (default: wavelength_micron.inp).
-                            It will still creat a file with default name,
-                            but will duplicate an output file with the specified name.
-        comment  (string) : comment to add to the file header (default: None)
-        lambda_micron (numpy array) : wavelength to calculate continuum (in units of micron).
-        append (True/False) : if False, remove the existing wavelength_micron.inp and ignore any information in it 
-                              (default: False)
+      Parameters
+      ------------------------
+      filename : string
+          output filename. (default: wavelength_micron.inp).
+          It will still creat a file with default name,
+          but will duplicate an output file with the specified name.
+      comment  : string
+          comment to add to the file header (default: None)
+      lambda_micron : numpy array
+          wavelength to calculate continuum (in units of micron).
+      append : bool
+          if False, remove the existing wavelength_micron.inp and ignore any information in it (default: False)
+
+                              
+      Note
+      ----------------------------
+      Wavelengths must be monotonically increasing/decreasing.
+
+      Note
+      ----------------------------
+      Wavelength coverage must include the wavelengths at which the stellar spectra have most of their energy, 
+      and at which the dust cools predominantly. This in practice means that this should go all the way from 
+      0.1 micron to 1000 micron
 
       '''
       num_lambda = 0
@@ -335,19 +352,28 @@ class radmc3d_setup:
       '''
       Preparing the control file for disk model.
 
-      Input :
-      
-      d_to_g_ratio: dust-to-gas mass ratio 
-      a_max: maxmum grain size (unit: mm)
-      q: slope for grain size distribution
-      Mass_of_star: mass of protostar (unit: M_sun)
-      Accretion_rate: accretion rate    (unit: M_sun/yr)
-      Radius_of_disk: radius of disk    (unit: AU)
-      Q: Toomre index
-      pancake: thin slab model with constant density and temperature
-      NR: resolution in R axis
-      NTheta: resolution in theta axis
-      NPhi: resolution in ohi axis
+      Parameters
+      ----------------------------
+      d_to_g_ratio : float
+          dust-to-gas mass ratio 
+      a_max : float
+          Maxmum grain size (unit: mm)
+      q : float
+          Slope for grain size distribution
+      Mass_of_star : float
+          Mass of protostar (unit: M_sun)
+      Accretion_rate : float
+          Accretion rate    (unit: M_sun/yr)
+      Radius_of_disk : float
+          Radius of disk    (unit: AU)
+      Q : float
+          Toomre index
+      NR : int
+          Resolution in R axis
+      NTheta : int
+          Resolution in theta axis
+      NPhi : int
+          Resolution in ohi axis
 
       '''
       if a_max is None:                   a_max = 0.1  # 100 um
@@ -509,13 +535,16 @@ class radmc3d_setup:
       '''
       Preparing the control file for velocity field.
 
-      Input :
-      
-      Kep: Keplerian azimuthal velocity field
-      vinfall: infall velocity (unit: Keplerian velocity)
-               e.g., 1 for 1 Keplerian velocity of infall direction
-      Rcb: centrifugal barrier (unit: AU)
-      outflow: outflow velocity (unit: Keplerian velocity)
+      Parameters
+      ----------------------------
+      Kep : bool
+          Keplerian azimuthal velocity field
+      vinfall : float
+          Infall velocity (unit: Keplerian velocity) e.g., 1 for 1 Keplerian velocity of infall direction
+      Rcb : float
+          Centrifugal barrier (unit: AU)
+      outflow : float
+          Outflow velocity (unit: Keplerian velocity)
       '''
       if vinfall is None: vinfall = 0
       
@@ -555,17 +584,23 @@ class radmc3d_setup:
       '''
       Preparing the control file for heating mechanism.
       
-      Input :
+      Parameters
+      ----------------------
+      accretion : bool
+          Accretion heating mechanism due to release of gravitational energy
+      irradiation : bool
+          Irradiation heating from central protostar
+      L_star : float
+          Luminosity of central protostar (unit: L_sun)
       
-      accretion: accretion heating mechanism due to release of gravitational energy
-      irradiation : irradiation heating from central protostar
-      L_star: Luminosity of central protostar (unit: L_sun)
+      Note
+      ----------------------
+      If both heating mechanisms are True, combine accretion and irradiation temperature map.
       
-      (If both heating mechanisms are True, combine accretion and irradiation temperature map.)
-      
-      kwargs :
-      
-      heat        : directly assigning heating mechanism by words ('accretion'/'radiation'/'combine')
+      kwargs
+      ----------------------
+      heat        : 'accretion'/'radiation'/'combine'
+          Directly assigning heating mechanism by words 
       '''
 
       if L_star is None: L_star = 0.89
@@ -671,13 +706,17 @@ class radmc3d_setup:
       '''
       Preparing the control file for gas density.
 
-      Input :
-
-      abundance: abundance of the simulated gas molecule compared with hydrogen
-      snowline: At which temperature causes desorption from dust grains (unit:K)
-                (if None, there is no abundance enhancement)
-      enhancement: how much the abundance is enhanced inside snowline
-      gas_inside_rcb: whether gas is absent inside centrifugal barrier
+      Parameters
+      ----------------------------
+      abundance : float
+          Abundance of the simulated gas molecule compared with hydrogen
+      snowline : float
+          At which temperature causes desorption from dust grains (unit:K)
+          (if None, there is no abundance enhancement)
+      enhancement : float
+          How much the abundance is enhanced inside snowline
+      gas_inside_rcb : bool
+          Whether gas is absent inside centrifugal barrier
       '''
       
       if self.rcb is None:  
@@ -731,11 +770,16 @@ class radmc3d_setup:
       '''
       A small function to duplicate the .inp files.
 
-      Input :
-        default_filename (str) : default output file name
-        filename         (str) : filename of the duplication
-        comment          (str) : if present, include it as header in the duplicated output file.
-        timemark         (str) : if present, include it as header in the duplicated output file.
+      Parameters
+      -----------------------
+      default_filename : str
+          Default output file name
+      filename         : str
+          Filename of the duplication
+      comment          : str
+          If present, include it as header in the duplicated output file.
+      timemark         : str
+          If present, include it as header in the duplicated output file.
 
       '''
       os.system('rm -rf {}'.format(filename))
