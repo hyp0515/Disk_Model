@@ -202,7 +202,7 @@ class DiskModel_spherical:
                          T_map)
         self.T_map = np.maximum(T_map, 20)
 
-    def extend_to_spherical(self, NTheta, NPhi, theta_min_deg=30):
+    def extend_to_spherical(self, NTheta, NPhi, theta_min_deg=20):
 
         """
         Extend the disk model to spherical coordinates
